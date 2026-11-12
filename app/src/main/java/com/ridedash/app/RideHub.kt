@@ -28,7 +28,7 @@ object RideHub {
     )
 
     enum class Call { IDLE, RINGING, OFFHOOK }
-    enum class Change { MESSAGES, MEDIA, CALL, LINK }
+    enum class Change { MESSAGES, MEDIA, CALL, LINK, PAIRING }
 
     private val main = Handler(Looper.getMainLooper())
     private val listeners = LinkedHashSet<(Change) -> Unit>()
@@ -87,6 +87,15 @@ object RideHub {
         callerName = name
         callRemote = remote
         fire(Change.CALL)
+    }
+
+    /** 6-digit code waiting for the user to confirm, or null. */
+    var pairingCode: String? = null
+        private set
+
+    fun setPairing(code: String?) = onMain {
+        pairingCode = code
+        fire(Change.PAIRING)
     }
 
     fun setLink(status: String) = onMain {

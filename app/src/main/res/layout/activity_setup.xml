@@ -95,7 +95,12 @@
         <TextView
             android:id="@+id/peerText"
             style="@style/Body"
-            android:textColor="@color/text" />
+            android:textColor="@color/text"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/linkStatusText"
+            style="@style/Body" />
 
         <Button
             android:id="@+id/btnBluetooth"
@@ -103,9 +108,24 @@
             android:text="@string/btn_bt_settings" />
 
         <Button
+            android:id="@+id/btnStartPairing"
+            style="@style/SetupBtn"
+            android:text="@string/btn_start_pairing" />
+
+        <Button
             android:id="@+id/btnPickPeer"
             style="@style/SetupBtn"
             android:text="@string/btn_pick_peer" />
+
+        <Button
+            android:id="@+id/btnPairNow"
+            style="@style/SetupBtn"
+            android:text="@string/btn_pair_now" />
+
+        <Button
+            android:id="@+id/btnForget"
+            style="@style/SetupBtn"
+            android:text="@string/btn_forget" />
 
         <!-- 4. Favourites -->
         <TextView

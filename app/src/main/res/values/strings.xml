@@ -57,10 +57,25 @@
     <string name="btn_perms">Allow location, phone and Bluetooth</string>
     <string name="btn_home">Set RideDash as home screen (bike phone)</string>
     <string name="btn_battery">Stop battery optimisation for RideDash</string>
-    <string name="h_link">3. Connect the two phones</string>
-    <string name="link_help">Pair both phones in Bluetooth settings first. Open RideDash on the bike phone, then on the main phone choose the bike phone below. Skip this if the old phone has its own SIM.</string>
+    <string name="h_link">3. Secure pairing of the two phones</string>
+    <string name="link_help">All data between the phones is encrypted, and only the phone you pair here is accepted.\n\n1. Pair both phones in Bluetooth settings.\n2. On the BIKE phone tap \"Start pairing\".\n3. On the MAIN phone choose the bike phone, then tap \"Pair with bike phone\".\n4. Both phones show a 6-digit code. Tap MATCH only if the codes are the same.\n\nSkip this if the old phone has its own SIM.</string>
     <string name="btn_bt_settings">Open Bluetooth settings</string>
-    <string name="btn_pick_peer">Choose bike phone (on main phone)</string>
+    <string name="btn_start_pairing">Bike phone: start pairing (3 min)</string>
+    <string name="btn_pick_peer">Main phone: choose bike phone</string>
+    <string name="btn_pair_now">Main phone: pair with bike phone</string>
+    <string name="btn_forget">Forget paired phone</string>
+    <string name="paired_with">Paired securely with: %1$s</string>
+    <string name="not_paired">Not paired yet</string>
+    <string name="chosen_not_paired">Bike phone chosen: %1$s (not paired yet)</string>
+    <string name="pairing_opened">Pairing open for 3 minutes. Now tap \"Pair with bike phone\" on the main phone.</string>
+    <string name="pairing_started">Pairing… keep both phones on this screen.</string>
+    <string name="forgot">Paired phone removed. Pair again to reconnect.</string>
+    <string name="wrong_mode_dash">Select \"Bike dashboard\" above first</string>
+    <string name="wrong_mode_comp">Select \"Main phone\" above first</string>
+    <string name="pair_title">Confirm pairing code</string>
+    <string name="pair_msg">%1$s\n\nCheck that the other phone shows exactly the same code. If it is different, someone may be trying to connect – tap DOESN\'T MATCH.</string>
+    <string name="pair_match">MATCH</string>
+    <string name="pair_no_match">DOESN\'T MATCH</string>
     <string name="h_favs">4. Favourite contacts</string>
     <string name="fav_hint">Name, number  (e.g. Home, +919800000000)</string>
     <string name="h_replies">5. Quick replies (one per line)</string>
@@ -78,7 +93,7 @@
     <string name="turn_on_bt">Turn on Bluetooth first</string>
     <string name="pair_first">No paired phones. Pair the bike phone in Bluetooth settings first.</string>
     <string name="choose_bike_phone">Choose the bike phone</string>
-    <string name="choose_peer_first">Saved. Now choose the bike phone to finish.</string>
+    <string name="choose_peer_first">Choose the bike phone first</string>
     <string name="notif_reminder">Remember to allow notification access</string>
     <string name="open_settings_manually">Please open this in phone Settings</string>
 </resources>

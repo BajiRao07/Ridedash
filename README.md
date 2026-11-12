@@ -15,6 +15,20 @@ Runs on **Android 5.0 (API 21) and newer**.
 
 If the old phone has its own SIM you can skip the main phone completely.
 
+## Security
+
+- **In-app pairing with a 6-digit code.** P-256 ECDH key exchange with a
+  commitment; both phones show the same code and the user confirms it on each.
+  A man-in-the-middle has a 1-in-a-million chance and is caught by mismatching codes.
+- **Encrypted link.** Encrypted, bonded Bluetooth sockets, plus AES-256-GCM on
+  every message with per-connection keys and replay protection.
+- **Only the paired phone is accepted**; anything else is disconnected.
+- **Role-limited commands.** The bike phone only accepts display data; the main
+  phone only accepts media/call/reply/dial commands, with input validation.
+- **Pairing key protected by Android Keystore** (Android 6+).
+- **No cloud backup or device transfer** of app data; **no unencrypted network traffic**.
+- Messages are never written to storage and nothing is sent to any server.
+
 ## Build the APK
 
 ### Option A – Android Studio (easiest)
@@ -39,17 +53,13 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 or copy the APK to the phone and open it (allow "Install unknown apps").
 
 ## First-time setup
-**Bike phone**
-1. Open RideDash → Setup → choose *Bike dashboard*.
-2. Allow notification access, then location/phone/Bluetooth.
-3. Set RideDash as home screen.
-4. Save and start. It shows "Waiting for main phone…".
-
-**Main phone**
 1. Pair the two phones in Bluetooth settings.
-2. Open RideDash → Setup → choose *Main phone*.
-3. Allow notification access and permissions.
-4. Choose bike phone → Save and start. Both should show "connected".
+2. **Bike phone:** Setup → *Bike dashboard* → allow permissions → set as home
+   screen → **Start pairing (3 min)**.
+3. **Main phone:** Setup → *Main phone* → allow permissions → **Choose bike phone**
+   → **Pair with bike phone**.
+4. Both phones show a 6-digit code. Tap **MATCH** on both only if they are identical.
+5. Tap **Save and start** on both. They show "securely connected".
 
 ## Test checklist
 - [ ] Speed changes while walking/riding (GPS needs open sky)

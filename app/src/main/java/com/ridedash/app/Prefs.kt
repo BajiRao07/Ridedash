@@ -25,6 +25,20 @@ object Prefs {
     fun setPeer(c: Context, addr: String, name: String) =
         p(c).edit().putString("peer_addr", addr).putString("peer_name", name).apply()
 
+    fun clearPeer(c: Context) = p(c).edit().remove("peer_addr").remove("peer_name").apply()
+
+    fun isPaired(c: Context) = peerAddress(c) != null && SecureStore.loadKey(c) != null
+
+    /** Main phone: user asked to pair with the chosen bike phone. */
+    fun pairingRequested(c: Context) = p(c).getBoolean("pair_req", false)
+    fun setPairingRequested(c: Context, v: Boolean) = p(c).edit().putBoolean("pair_req", v).apply()
+
+    /** Bike phone: pairing window, open for 3 minutes. */
+    fun pairingOpen(c: Context) = System.currentTimeMillis() < p(c).getLong("pair_until", 0L)
+    fun openPairing(c: Context) =
+        p(c).edit().putLong("pair_until", System.currentTimeMillis() + 3 * 60_000L).apply()
+    fun closePairing(c: Context) = p(c).edit().putLong("pair_until", 0L).apply()
+
     fun setupDone(c: Context) = p(c).getBoolean("setup_done", false)
     fun setSetupDone(c: Context) = p(c).edit().putBoolean("setup_done", true).apply()
 

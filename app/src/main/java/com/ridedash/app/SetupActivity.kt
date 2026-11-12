@@ -22,11 +22,20 @@ class SetupActivity : AppCompatActivity() {
     private lateinit var modeGroup: RadioGroup
     private lateinit var permStatus: TextView
     private lateinit var peerText: TextView
+    private lateinit var linkStatusText: TextView
     private lateinit var fav1: EditText
     private lateinit var fav2: EditText
     private lateinit var fav3: EditText
     private lateinit var quickReplies: EditText
     private lateinit var readAloud: CheckBox
+
+    private val hubListener: (RideHub.Change) -> Unit = { change ->
+        when (change) {
+            RideHub.Change.LINK -> { linkStatusText.text = RideHub.linkStatus; updatePeer() }
+            RideHub.Change.PAIRING -> PairingDialog.update(this)
+            else -> {}
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +44,7 @@ class SetupActivity : AppCompatActivity() {
         modeGroup = findViewById(R.id.modeGroup)
         permStatus = findViewById(R.id.permStatus)
         peerText = findViewById(R.id.peerText)
+        linkStatusText = findViewById(R.id.linkStatusText)
         fav1 = findViewById(R.id.fav1)
         fav2 = findViewById(R.id.fav2)
         fav3 = findViewById(R.id.fav3)
@@ -47,7 +57,6 @@ class SetupActivity : AppCompatActivity() {
         fav3.setText(Prefs.favRaw(this, 3))
         quickReplies.setText(Prefs.quickRepliesRaw(this))
         readAloud.isChecked = Prefs.readAloud(this)
-        updatePeer()
 
         findViewById<Button>(R.id.btnNotifAccess).setOnClickListener {
             open(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
@@ -65,13 +74,26 @@ class SetupActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnBluetooth).setOnClickListener {
             open(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
         }
+        findViewById<Button>(R.id.btnStartPairing).setOnClickListener { startPairingOnBike() }
         findViewById<Button>(R.id.btnPickPeer).setOnClickListener { pickPeer() }
+        findViewById<Button>(R.id.btnPairNow).setOnClickListener { pairFromMain() }
+        findViewById<Button>(R.id.btnForget).setOnClickListener { forget() }
         findViewById<Button>(R.id.btnSave).setOnClickListener { saveAndStart() }
     }
 
     override fun onResume() {
         super.onResume()
+        RideHub.addListener(hubListener)
         updateStatus()
+        updatePeer()
+        linkStatusText.text = RideHub.linkStatus
+        PairingDialog.update(this)
+    }
+
+    override fun onPause() {
+        RideHub.removeListener(hubListener)
+        PairingDialog.detach()
+        super.onPause()
     }
 
     private fun updateStatus() {
@@ -85,25 +107,88 @@ class SetupActivity : AppCompatActivity() {
     }
 
     private fun updatePeer() {
-        val name = Prefs.peerName(this)
-        peerText.text = if (Prefs.peerAddress(this) == null) getString(R.string.no_peer)
-        else getString(R.string.peer_selected, name.ifBlank { Prefs.peerAddress(this) ?: "" })
+        val name = Prefs.peerName(this).ifBlank { Prefs.peerAddress(this) ?: "" }
+        peerText.text = when {
+            Prefs.isPaired(this) -> getString(R.string.paired_with, name)
+            Prefs.peerAddress(this) != null -> getString(R.string.chosen_not_paired, name)
+            else -> getString(R.string.not_paired)
+        }
+    }
+
+    private fun selectedCompanion() = modeGroup.checkedRadioButtonId == R.id.modeCompanion
+
+    private fun saveSettings() {
+        val companion = selectedCompanion()
+        if (companion != Prefs.isCompanion(this)) {
+            // Changing role invalidates any existing pairing.
+            SecureStore.clear(this)
+            Prefs.clearPeer(this)
+        }
+        Prefs.setMode(this, if (companion) Prefs.MODE_COMPANION else Prefs.MODE_DASHBOARD)
+        Prefs.setFav(this, 1, fav1.text.toString())
+        Prefs.setFav(this, 2, fav2.text.toString())
+        Prefs.setFav(this, 3, fav3.text.toString())
+        Prefs.setQuickReplies(this, quickReplies.text.toString())
+        Prefs.setReadAloud(this, readAloud.isChecked)
+        Prefs.setSetupDone(this)
+    }
+
+    private fun checkBluetoothReady(): Boolean {
+        if (!Perms.bluetooth(this)) { toast(getString(R.string.allow_bt_first)); return false }
+        val adapter = (getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
+        if (adapter == null) { toast(getString(R.string.no_bt)); return false }
+        if (!adapter.isEnabled) { toast(getString(R.string.turn_on_bt)); return false }
+        return true
+    }
+
+    /** Bike phone: open a 3-minute pairing window. */
+    private fun startPairingOnBike() {
+        if (selectedCompanion()) { toast(getString(R.string.wrong_mode_dash)); return }
+        if (!checkBluetoothReady()) return
+        saveSettings()
+        Prefs.openPairing(this)
+        LinkService.restart(this)
+        toast(getString(R.string.pairing_opened))
+    }
+
+    /** Main phone: connect to the chosen bike phone and run the pairing exchange. */
+    private fun pairFromMain() {
+        if (!selectedCompanion()) { toast(getString(R.string.wrong_mode_comp)); return }
+        if (!checkBluetoothReady()) return
+        if (Prefs.peerAddress(this) == null) { toast(getString(R.string.choose_peer_first)); return }
+        saveSettings()
+        Prefs.setPairingRequested(this, true)
+        LinkService.restart(this)
+        toast(getString(R.string.pairing_started))
+    }
+
+    private fun forget() {
+        SecureStore.clear(this)
+        Prefs.clearPeer(this)
+        Prefs.setPairingRequested(this, false)
+        Prefs.closePairing(this)
+        LinkService.restart(this)
+        updatePeer()
+        toast(getString(R.string.forgot))
     }
 
     @SuppressLint("MissingPermission")
     private fun pickPeer() {
-        val adapter = (getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
-        if (adapter == null) { toast(getString(R.string.no_bt)); return }
-        if (!Perms.bluetooth(this)) { toast(getString(R.string.allow_bt_first)); return }
+        if (!selectedCompanion()) { toast(getString(R.string.wrong_mode_comp)); return }
+        if (!checkBluetoothReady()) return
+        val adapter = (getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter ?: return
         try {
-            if (!adapter.isEnabled) { toast(getString(R.string.turn_on_bt)); return }
             val devices = adapter.bondedDevices.toList()
             if (devices.isEmpty()) { toast(getString(R.string.pair_first)); return }
             val labels = devices.map { "${it.name ?: "Unknown"}\n${it.address}" }.toTypedArray()
             AlertDialog.Builder(this)
                 .setTitle(R.string.choose_bike_phone)
                 .setItems(labels) { _, i ->
-                    Prefs.setPeer(this, devices[i].address, devices[i].name ?: devices[i].address)
+                    val d = devices[i]
+                    if (!d.address.equals(Prefs.peerAddress(this), ignoreCase = true)) {
+                        SecureStore.clear(this) // new device: old key no longer valid
+                    }
+                    Prefs.setPeer(this, d.address, d.name ?: d.address)
                     updatePeer()
                 }
                 .setNegativeButton(android.R.string.cancel, null)
@@ -114,22 +199,8 @@ class SetupActivity : AppCompatActivity() {
     }
 
     private fun saveAndStart() {
-        val companion = modeGroup.checkedRadioButtonId == R.id.modeCompanion
-        Prefs.setMode(this, if (companion) Prefs.MODE_COMPANION else Prefs.MODE_DASHBOARD)
-        Prefs.setFav(this, 1, fav1.text.toString())
-        Prefs.setFav(this, 2, fav2.text.toString())
-        Prefs.setFav(this, 3, fav3.text.toString())
-        Prefs.setQuickReplies(this, quickReplies.text.toString())
-        Prefs.setReadAloud(this, readAloud.isChecked)
-        Prefs.setSetupDone(this)
-
-        if (companion && Prefs.peerAddress(this) == null) {
-            toast(getString(R.string.choose_peer_first))
-            return
-        }
-        // Restart the link so a mode change takes effect.
-        LinkService.stop(this)
-        LinkService.start(this)
+        saveSettings()
+        LinkService.restart(this)
         if (!Perms.notifAccess(this)) toast(getString(R.string.notif_reminder))
         finish()
     }

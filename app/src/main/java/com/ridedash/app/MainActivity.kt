@@ -78,6 +78,7 @@ class MainActivity : AppCompatActivity() {
             RideHub.Change.MEDIA -> updateMedia()
             RideHub.Change.CALL -> updateCall()
             RideHub.Change.LINK -> updateLink()
+            RideHub.Change.PAIRING -> PairingDialog.update(this)
         }
     }
 
@@ -143,6 +144,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         RideHub.addListener(hubListener)
         updateLink(); updateMedia(); updateMessages(); updateCall()
+        PairingDialog.update(this)
         startGps()
         if (current === screenMap) map?.onResume()
         ContextCompat.registerReceiver(
@@ -153,6 +155,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         RideHub.removeListener(hubListener)
+        PairingDialog.detach()
         stopGps()
         map?.onPause()
         try { unregisterReceiver(batteryReceiver) } catch (e: Exception) { }
