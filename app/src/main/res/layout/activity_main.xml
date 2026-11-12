@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:keepScreenOn="true">
+
+    <!-- ===================== DASHBOARD ===================== -->
+    <LinearLayout
+        android:id="@+id/screenDash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextClock
+                android:id="@+id/clock"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:format12Hour="h:mm a"
+                android:format24Hour="HH:mm"
+                android:textColor="@color/text"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/batteryText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:layout_marginRight="12dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/linkText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxWidth="200dp"
+                android:maxLines="2"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Speed -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:minHeight="120dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/speedText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:text="0"
+                android:textColor="@color/text"
+                android:textSize="96sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/kmh"
+                android:textColor="@color/accent"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <!-- Music -->
+        <LinearLayout
+            android:id="@+id/mediaCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/mediaTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/mediaArtist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnPrev"
+                    style="@style/Tile"
+                    android:text="◀◀" />
+
+                <Button
+                    android:id="@+id/btnPlay"
+                    style="@style/Tile"
+                    android:background="@drawable/bg_accent"
+                    android:text="▶"
+                    android:textSize="28sp" />
+
+                <Button
+                    android:id="@+id/btnNext"
+                    style="@style/Tile"
+                    android:text="▶▶" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Latest message -->
+        <LinearLayout
+            android:id="@+id/msgCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/lastMsgFrom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="@color/accent"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/lastMsgText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@color/text"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <!-- Main buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnMap"
+                style="@style/Tile"
+                android:text="@string/map" />
+
+            <Button
+                android:id="@+id/btnMessages"
+                style="@style/Tile"
+                android:text="@string/messages" />
+
+            <Button
+                android:id="@+id/btnCalls"
+                style="@style/Tile"
+                android:text="@string/calls" />
+
+            <Button
+                android:id="@+id/btnSetup"
+                style="@style/Tile"
+                android:text="@string/setup_short"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ===================== MAP ===================== -->
+    <FrameLayout
+        android:id="@+id/screenMap"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <FrameLayout
+            android:id="@+id/mapContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/mapSpeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:layout_margin="12dp"
+            android:background="@drawable/bg_card"
+            android:paddingLeft="16dp"
+            android:paddingTop="8dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="8dp"
+            android:text="0 km/h"
+            android:textColor="@color/text"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:orientation="vertical"
+            android:padding="6dp">
+
+            <Button
+                android:id="@+id/btnZoomIn"
+                style="@style/RoundBtn"
+                android:text="+" />
+
+            <Button
+                android:id="@+id/btnZoomOut"
+                style="@style/RoundBtn"
+                android:text="−" />
+
+            <Button
+                android:id="@+id/btnRecenter"
+                style="@style/RoundBtn"
+                android:text="@string/me"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <Button
+                android:id="@+id/btnMapBack"
+                style="@style/Tile"
+                android:text="@string/back" />
+
+            <Button
+                android:id="@+id/btnNavigate"
+                style="@style/Tile"
+                android:layout_weight="2"
+                android:background="@drawable/bg_accent"
+                android:text="@string/navigate" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- ===================== MESSAGES ===================== -->
+    <LinearLayout
+        android:id="@+id/screenMessages"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnMsgBack"
+                style="@style/Tile"
+                android:text="@string/back" />
+
+            <Button
+                android:id="@+id/btnClearMsgs"
+                style="@style/Tile"
+                android:text="@string/clear" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/Heading"
+            android:layout_marginTop="12dp"
+            android:text="@string/recent_messages" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:id="@+id/messageList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+    </LinearLayout>
+
+    <!-- ===================== CALLS (favourites) ===================== -->
+    <LinearLayout
+        android:id="@+id/screenCalls"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnCallsBack"
+                style="@style/Tile"
+                android:text="@string/back" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/Heading"
+            android:layout_marginTop="12dp"
+            android:text="@string/favourites" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:id="@+id/favList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+    </LinearLayout>
+
+    <!-- ===================== INCOMING CALL OVERLAY ===================== -->
+    <LinearLayout
+        android:id="@+id/callOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/overlay"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/callStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/accent"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/callName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:maxLines="2"
+            android:textColor="@color/text"
+            android:textSize="40sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_marginTop="40dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnReject"
+                style="@style/Tile"
+                android:background="@drawable/bg_reject"
+                android:text="@string/reject"
+                android:textSize="26sp" />
+
+            <Button
+                android:id="@+id/btnAnswer"
+                style="@style/Tile"
+                android:background="@drawable/bg_answer"
+                android:text="@string/answer"
+                android:textSize="26sp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

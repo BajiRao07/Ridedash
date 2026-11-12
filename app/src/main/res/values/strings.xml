@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RideDash</string>
+    <string name="setup">RideDash Setup</string>
+
+    <!-- Dashboard -->
+    <string name="kmh">km/h</string>
+    <string name="kmh_value">%1$s km/h</string>
+    <string name="map">MAP</string>
+    <string name="messages">MSGS</string>
+    <string name="calls">CALL</string>
+    <string name="setup_short">SETUP</string>
+    <string name="back">BACK</string>
+    <string name="clear">CLEAR</string>
+    <string name="me">ME</string>
+    <string name="navigate">NAVIGATE</string>
+    <string name="go">Go</string>
+    <string name="where_to">Where to?</string>
+    <string name="answer">ANSWER</string>
+    <string name="reject">REJECT</string>
+    <string name="end_call">END CALL</string>
+    <string name="read">READ</string>
+    <string name="reply">REPLY</string>
+    <string name="favourites">Favourite contacts</string>
+    <string name="recent_messages">Recent messages</string>
+
+    <string name="nothing_playing">Nothing playing</string>
+    <string name="start_music_hint">Start music on your phone</string>
+    <string name="unknown_track">Unknown track</string>
+    <string name="no_messages">No new messages</string>
+    <string name="no_messages_long">No messages yet. They appear here when WhatsApp, SMS or Telegram notifications arrive.</string>
+    <string name="from_app">%1$s · %2$s</string>
+    <string name="tts_message">Message from %1$s. %2$s</string>
+    <string name="tts_call">Call from %1$s</string>
+    <string name="incoming_call">Incoming call</string>
+    <string name="on_call">On call</string>
+    <string name="cant_answer">Can\'t answer from here on this Android version</string>
+    <string name="cant_reject">Can\'t end call from here on this Android version</string>
+    <string name="need_location">Allow location in Setup to see yourself on the map</string>
+    <string name="no_nav_app">No navigation app installed</string>
+    <string name="add_replies">Add quick replies in Setup</string>
+    <string name="reply_to">Reply to %1$s</string>
+    <string name="sent">Sent</string>
+    <string name="cant_reply">Can\'t reply to this message</string>
+    <string name="no_favourites">No favourite contacts yet. Add up to 3 in Setup.</string>
+    <string name="call_name">Call %1$s</string>
+    <string name="calling">Calling %1$s</string>
+    <string name="cant_call">Couldn\'t start the call</string>
+
+    <!-- Setup -->
+    <string name="safety">Ride safe: set everything up before you ride. Use voice and big buttons only, keep your eyes on the road and follow local traffic laws.</string>
+    <string name="h_mode">1. What is this phone?</string>
+    <string name="mode_dashboard">Bike dashboard (old phone mounted on the bike)</string>
+    <string name="mode_companion">Main phone (sends calls, messages and music to the bike phone)</string>
+    <string name="h_perms">2. Permissions</string>
+    <string name="btn_notif">Allow notification access</string>
+    <string name="btn_perms">Allow location, phone and Bluetooth</string>
+    <string name="btn_home">Set RideDash as home screen (bike phone)</string>
+    <string name="btn_battery">Stop battery optimisation for RideDash</string>
+    <string name="h_link">3. Connect the two phones</string>
+    <string name="link_help">Pair both phones in Bluetooth settings first. Open RideDash on the bike phone, then on the main phone choose the bike phone below. Skip this if the old phone has its own SIM.</string>
+    <string name="btn_bt_settings">Open Bluetooth settings</string>
+    <string name="btn_pick_peer">Choose bike phone (on main phone)</string>
+    <string name="h_favs">4. Favourite contacts</string>
+    <string name="fav_hint">Name, number  (e.g. Home, +919800000000)</string>
+    <string name="h_replies">5. Quick replies (one per line)</string>
+    <string name="read_aloud">Read new messages and caller names aloud</string>
+    <string name="save">SAVE AND START</string>
+    <string name="not_needed">Not needed on this Android version</string>
+    <string name="st_notif">Notification access (messages, music, caller name)</string>
+    <string name="st_location">Location (speed, map)</string>
+    <string name="st_phone">Phone (answer calls)</string>
+    <string name="st_bluetooth">Bluetooth (phone link)</string>
+    <string name="no_peer">Bike phone: not chosen</string>
+    <string name="peer_selected">Bike phone: %1$s</string>
+    <string name="no_bt">This phone has no Bluetooth</string>
+    <string name="allow_bt_first">Allow the Bluetooth permission first</string>
+    <string name="turn_on_bt">Turn on Bluetooth first</string>
+    <string name="pair_first">No paired phones. Pair the bike phone in Bluetooth settings first.</string>
+    <string name="choose_bike_phone">Choose the bike phone</string>
+    <string name="choose_peer_first">Saved. Now choose the bike phone to finish.</string>
+    <string name="notif_reminder">Remember to allow notification access</string>
+    <string name="open_settings_manually">Please open this in phone Settings</string>
+</resources>

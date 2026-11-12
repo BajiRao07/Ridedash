@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/setup"
+            android:textColor="@color/text"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            style="@style/Body"
+            android:text="@string/safety" />
+
+        <!-- 1. Mode -->
+        <TextView
+            style="@style/Heading"
+            android:text="@string/h_mode" />
+
+        <RadioGroup
+            android:id="@+id/modeGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp">
+
+            <RadioButton
+                android:id="@+id/modeDashboard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="52dp"
+                android:text="@string/mode_dashboard"
+                android:textColor="@color/text"
+                android:textSize="17sp" />
+
+            <RadioButton
+                android:id="@+id/modeCompanion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="52dp"
+                android:text="@string/mode_companion"
+                android:textColor="@color/text"
+                android:textSize="17sp" />
+        </RadioGroup>
+
+        <!-- 2. Permissions -->
+        <TextView
+            style="@style/Heading"
+            android:text="@string/h_perms" />
+
+        <TextView
+            android:id="@+id/permStatus"
+            style="@style/Body"
+            android:lineSpacingExtra="4dp"
+            android:textColor="@color/text" />
+
+        <Button
+            android:id="@+id/btnNotifAccess"
+            style="@style/SetupBtn"
+            android:text="@string/btn_notif" />
+
+        <Button
+            android:id="@+id/btnPerms"
+            style="@style/SetupBtn"
+            android:text="@string/btn_perms" />
+
+        <Button
+            android:id="@+id/btnHome"
+            style="@style/SetupBtn"
+            android:text="@string/btn_home" />
+
+        <Button
+            android:id="@+id/btnBattery"
+            style="@style/SetupBtn"
+            android:text="@string/btn_battery" />
+
+        <!-- 3. Link -->
+        <TextView
+            style="@style/Heading"
+            android:text="@string/h_link" />
+
+        <TextView
+            style="@style/Body"
+            android:text="@string/link_help" />
+
+        <TextView
+            android:id="@+id/peerText"
+            style="@style/Body"
+            android:textColor="@color/text" />
+
+        <Button
+            android:id="@+id/btnBluetooth"
+            style="@style/SetupBtn"
+            android:text="@string/btn_bt_settings" />
+
+        <Button
+            android:id="@+id/btnPickPeer"
+            style="@style/SetupBtn"
+            android:text="@string/btn_pick_peer" />
+
+        <!-- 4. Favourites -->
+        <TextView
+            style="@style/Heading"
+            android:text="@string/h_favs" />
+
+        <EditText
+            android:id="@+id/fav1"
+            style="@style/Field"
+            android:hint="@string/fav_hint"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/fav2"
+            style="@style/Field"
+            android:hint="@string/fav_hint"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/fav3"
+            style="@style/Field"
+            android:hint="@string/fav_hint"
+            android:inputType="text" />
+
+        <!-- 5. Quick replies -->
+        <TextView
+            style="@style/Heading"
+            android:text="@string/h_replies" />
+
+        <EditText
+            android:id="@+id/quickReplies"
+            style="@style/Field"
+            android:gravity="top|start"
+            android:inputType="textMultiLine"
+            android:minLines="4" />
+
+        <CheckBox
+            android:id="@+id/readAloud"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:minHeight="52dp"
+            android:text="@string/read_aloud"
+            android:textColor="@color/text"
+            android:textSize="17sp" />
+
+        <Button
+            android:id="@+id/btnSave"
+            style="@style/SetupBtn"
+            android:layout_height="72dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="32dp"
+            android:background="@drawable/bg_accent"
+            android:text="@string/save"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</ScrollView>

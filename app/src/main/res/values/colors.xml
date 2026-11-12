@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#000000</color>
+    <color name="card">#14171C</color>
+    <color name="tile">#1E232A</color>
+    <color name="tile_pressed">#323A45</color>
+    <color name="stroke">#2C333C</color>
+    <color name="accent">#00E676</color>
+    <color name="answer">#00C853</color>
+    <color name="answer_pressed">#009624</color>
+    <color name="reject">#E53935</color>
+    <color name="reject_pressed">#AB000D</color>
+    <color name="text">#FFFFFF</color>
+    <color name="text_secondary">#9AA0A6</color>
+    <color name="overlay">#F2000000</color>
+</resources>
