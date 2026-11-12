@@ -21,6 +21,10 @@
     <string name="tile_chats">Chats</string>
     <string name="tile_call">Call</string>
     <string name="settings">Settings</string>
+    <string name="all_apps">All apps</string>
+    <string name="add_app">Add app</string>
+    <string name="long_press_hint">Tip: long-press any icon on the home screen to change it.</string>
+    <string name="choose_icon">Choose what goes here</string>
     <string name="sos">SOS</string>
     <string name="sos_desc">Emergency: send location to your SOS contact</string>
     <string name="phone_home">Phone home screen</string>

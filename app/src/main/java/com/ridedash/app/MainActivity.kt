@@ -47,31 +47,28 @@ class MainActivity : AppCompatActivity() {
     private lateinit var screenMessages: View
     private lateinit var screenCalls: View
     private lateinit var screenMusic: View
+    private lateinit var screenApps: View
+    private lateinit var appsList: LinearLayout
     private lateinit var callOverlay: View
     private var current: View? = null
 
-    private lateinit var speedText: TextView
+    // Home views: re-inflated for bike (portrait) or car (landscape), so they may be absent.
+    private var speedText: TextView? = null
+    private var speedSmall: TextView? = null
+    private var batteryText: TextView? = null
+    private var linkText: TextView? = null
+    private var nowPlayingText: TextView? = null
+    private var chatBadge: TextView? = null
+    private var iconGrid: LinearLayout? = null
+    private var homeLandscape: Boolean? = null
+    private var lastSpeed = "0"
+    private var lastBattery = ""
     private lateinit var mapSpeed: TextView
-    private lateinit var batteryText: TextView
-    private lateinit var linkText: TextView
     private lateinit var mediaTitle: TextView
     private lateinit var mediaArtist: TextView
     private lateinit var btnPlay: ImageButton
-    private lateinit var speedSmall: TextView
-    private lateinit var speedPill: View
-    private lateinit var bigSpeed: View
-    private lateinit var tilesRow1: LinearLayout
-    private lateinit var tilesRow2: LinearLayout
-    private lateinit var tileNav: View
-    private lateinit var tileMusic: View
-    private lateinit var tileChats: View
-    private lateinit var tileCall: View
-    private lateinit var chatBadge: TextView
-    private lateinit var nowPlayingText: TextView
     private var seenMessages = 0
     private var lastLocation: Location? = null
-    private lateinit var appDock: LinearLayout
-    private lateinit var appDockScroll: View
     private lateinit var messageList: LinearLayout
     private lateinit var favList: LinearLayout
     private lateinit var mapContainer: FrameLayout
@@ -104,8 +101,9 @@ class MainActivity : AppCompatActivity() {
             lastLocation = location
             val kmh = if (location.hasSpeed()) (location.speed * 3.6f).roundToInt() else 0
             val txt = if (kmh < 2) "0" else kmh.toString()
-            speedText.text = txt
-            speedSmall.text = txt
+            lastSpeed = txt
+            speedText?.text = txt
+            speedSmall?.text = txt
             mapSpeed.text = getString(R.string.kmh_value, txt)
         }
 
@@ -113,7 +111,9 @@ class MainActivity : AppCompatActivity() {
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
         override fun onProviderEnabled(provider: String) {}
         override fun onProviderDisabled(provider: String) {
-            speedText.text = "–"
+            lastSpeed = "–"
+            speedText?.text = "–"
+            speedSmall?.text = "–"
         }
     }
 
@@ -121,7 +121,10 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(context: Context, intent: Intent) {
             val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
             val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100)
-            if (level >= 0 && scale > 0) batteryText.text = "${level * 100 / scale}%"
+            if (level >= 0 && scale > 0) {
+                lastBattery = "${level * 100 / scale}%"
+                batteryText?.text = lastBattery
+            }
         }
     }
 
@@ -162,9 +165,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         RideHub.addListener(hubListener)
-        buildAppDock()
         applyOrientationSetting()
-        applyLayout()
+        applyLayout(force = true)
         updateLink(); updateMedia(); updateMessages(); updateCall()
         PairingDialog.update(this)
         startGps()
@@ -198,27 +200,13 @@ class MainActivity : AppCompatActivity() {
         screenMessages = findViewById(R.id.screenMessages)
         screenCalls = findViewById(R.id.screenCalls)
         screenMusic = findViewById(R.id.screenMusic)
+        screenApps = findViewById(R.id.screenApps)
+        appsList = findViewById(R.id.appsList)
         callOverlay = findViewById(R.id.callOverlay)
-        speedText = findViewById(R.id.speedText)
         mapSpeed = findViewById(R.id.mapSpeed)
-        batteryText = findViewById(R.id.batteryText)
-        linkText = findViewById(R.id.linkText)
         mediaTitle = findViewById(R.id.mediaTitle)
         mediaArtist = findViewById(R.id.mediaArtist)
         btnPlay = findViewById(R.id.btnPlay)
-        speedSmall = findViewById(R.id.speedSmall)
-        speedPill = findViewById(R.id.speedPill)
-        bigSpeed = findViewById(R.id.bigSpeed)
-        tilesRow1 = findViewById(R.id.tilesRow1)
-        tilesRow2 = findViewById(R.id.tilesRow2)
-        tileNav = findViewById(R.id.tileNav)
-        tileMusic = findViewById(R.id.tileMusic)
-        tileChats = findViewById(R.id.tileChats)
-        tileCall = findViewById(R.id.tileCall)
-        chatBadge = findViewById(R.id.chatBadge)
-        nowPlayingText = findViewById(R.id.nowPlayingText)
-        appDock = findViewById(R.id.appDock)
-        appDockScroll = findViewById(R.id.appDockScroll)
         messageList = findViewById(R.id.messageList)
         favList = findViewById(R.id.favList)
         mapContainer = findViewById(R.id.mapContainer)
@@ -233,16 +221,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun wireButtons() {
-        click(R.id.tileNav) { askDestination() }
-        click(R.id.tileMusic) { show(screenMusic) }
-        click(R.id.nowPlaying) { show(screenMusic) }
-        click(R.id.tileChats) { show(screenMessages) }
-        click(R.id.tileCall) { show(screenCalls) }
         click(R.id.btnMusicBack) { show(screenDash) }
         click(R.id.btnOpenPlayer) { openMusicApp() }
-        click(R.id.btnSos) { sos() }
-        click(R.id.btnPhoneHome) { openPhoneHome() }
-        click(R.id.btnSetup) { startActivity(Intent(this, SetupActivity::class.java)) }
+        click(R.id.btnAppsBack) { show(screenDash) }
 
         click(R.id.btnPrev) { Actions.media(this, "prev") }
         click(R.id.btnPlay) { Actions.media(this, "toggle") }
@@ -267,7 +248,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun show(v: View) {
-        listOf(screenDash, screenMap, screenMessages, screenCalls, screenMusic).forEach {
+        listOf(screenDash, screenMap, screenMessages, screenCalls, screenMusic, screenApps).forEach {
             it.visibility = if (it === v) View.VISIBLE else View.GONE
         }
         current = v
@@ -279,6 +260,7 @@ class MainActivity : AppCompatActivity() {
                 renderMessages()
             }
             screenCalls -> renderFavourites()
+            screenApps -> renderAllApps()
         }
         if (v !== screenMap) map?.onPause()
     }
@@ -293,7 +275,7 @@ class MainActivity : AppCompatActivity() {
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, locationListener)
             gpsOn = true
         } catch (e: Exception) {
-            speedText.text = "–"
+            speedText?.text = "–"
         }
     }
 
@@ -439,45 +421,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Shortcuts to popular apps that are installed on this phone. */
-    private fun buildAppDock() {
-        val apps = listOf(
-            "com.whatsapp", "com.whatsapp.w4b", "com.instagram.android",
-            "com.google.android.youtube", "com.google.android.apps.youtube.music",
-            "com.spotify.music", "com.jio.media.jiobeats", "com.gaana",
-            "com.google.android.apps.maps", "org.telegram.messenger"
-        )
-        appDock.removeAllViews()
-        val d = resources.displayMetrics.density
-        for (pkg in apps) {
-            val launch = packageManager.getLaunchIntentForPackage(pkg) ?: continue
-            val icon = try { packageManager.getApplicationIcon(pkg) } catch (e: Exception) { continue }
-            val label = try {
-                packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
-            } catch (e: Exception) { pkg }
-            val iv = android.widget.ImageView(this).apply {
-                setImageDrawable(icon)
-                setBackgroundResource(R.drawable.bg_glass)
-                val pad = (9 * d).toInt()
-                setPadding(pad, pad, pad, pad)
-                contentDescription = label
-                isClickable = true
-                isFocusable = true
-                setOnClickListener {
-                    try {
-                        startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                    } catch (e: Exception) {
-                        toast(getString(R.string.cant_open))
-                    }
-                }
-            }
-            val lp = LinearLayout.LayoutParams((60 * d).toInt(), (60 * d).toInt())
-            lp.setMargins((5 * d).toInt(), 0, (5 * d).toInt(), 0)
-            appDock.addView(iv, lp)
-        }
-        appDockScroll.visibility = if (appDock.childCount > 0) View.VISIBLE else View.GONE
-    }
-
     private fun openMusicApp() {
         val pi = Local.controller?.sessionActivity
         try {
@@ -513,7 +456,7 @@ class MainActivity : AppCompatActivity() {
     // ---------------- UI updates ----------------
 
     private fun updateLink() {
-        linkText.text = if (Prefs.isStandalone(this)) "" else RideHub.linkStatus
+        linkText?.text = if (Prefs.isStandalone(this)) "" else RideHub.linkStatus
     }
 
     // ---------------- auto-fit layout ----------------
@@ -529,62 +472,241 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateBadge() {
         val unread = RideHub.messages.size - seenMessages
-        chatBadge.visibility = if (unread > 0) View.VISIBLE else View.GONE
-        chatBadge.text = if (unread > 9) "9+" else unread.toString()
+        val b = chatBadge ?: return
+        b.visibility = if (unread > 0) View.VISIBLE else View.GONE
+        b.text = if (unread > 9) "9+" else unread.toString()
     }
 
-    private fun moveTo(v: View, parent: LinearLayout) {
-        if (v.parent === parent) return
-        (v.parent as? android.view.ViewGroup)?.removeView(v)
-        parent.addView(v)
-    }
+    private fun dp(v: Float) = (v * resources.displayMetrics.density).toInt()
 
     /**
-     * Portrait (bike): big speed on top, 2 x 2 app icons.
-     * Landscape (car): speed in the top bar, 4 app icons in one row.
-     * Icon size is worked out from the screen, so it fits any phone.
+     * Builds the home screen for the current shape of the screen:
+     * portrait = bike (big speed, 6 round icons), landscape = car (sidebar, 8 round icons).
      */
-    private fun applyLayout() {
+    private fun applyLayout(force: Boolean = false) {
         val dm = resources.displayMetrics
-        val w = dm.widthPixels.toFloat()
-        val h = dm.heightPixels.toFloat()
-        val landscape = w > h
-        val size: Int
-        if (landscape) {
-            moveTo(tileChats, tilesRow1)
-            moveTo(tileCall, tilesRow1)
-            tilesRow2.visibility = View.GONE
-            bigSpeed.visibility = View.GONE
-            speedPill.visibility = View.VISIBLE
-            size = minOf(w * 0.14f, h * 0.27f).toInt()
-        } else {
-            moveTo(tileChats, tilesRow2)
-            moveTo(tileCall, tilesRow2)
-            tilesRow2.visibility = View.VISIBLE
-            bigSpeed.visibility = View.VISIBLE
-            speedPill.visibility = View.GONE
-            size = minOf(w * 0.32f, h * 0.15f).toInt()
+        val land = dm.widthPixels > dm.heightPixels
+        val c = screenDash as FrameLayout
+        if (force || homeLandscape != land || c.childCount == 0) {
+            homeLandscape = land
+            c.removeAllViews()
+            layoutInflater.inflate(if (land) R.layout.home_landscape else R.layout.home_portrait, c, true)
+            speedText = c.findViewById(R.id.speedText)
+            speedSmall = c.findViewById(R.id.speedSmall)
+            batteryText = c.findViewById(R.id.batteryText)
+            linkText = c.findViewById(R.id.linkText)
+            nowPlayingText = c.findViewById(R.id.nowPlayingText)
+            iconGrid = c.findViewById(R.id.iconGrid)
+            c.findViewById<View>(R.id.btnSos)?.setOnClickListener { sos() }
+            c.findViewById<View>(R.id.btnPhoneHome)?.setOnClickListener { openPhoneHome() }
+            c.findViewById<View>(R.id.btnAllApps)?.setOnClickListener { show(screenApps) }
+            c.findViewById<View>(R.id.nowPlaying)?.setOnClickListener { show(screenMusic) }
+            c.findViewById<View>(R.id.btnSetup)?.setOnClickListener {
+                startActivity(Intent(this, SetupActivity::class.java))
+            }
+            speedText?.text = lastSpeed
+            speedSmall?.text = lastSpeed
+            batteryText?.text = lastBattery
+            if (!land) speedText?.textSize = if (dm.heightPixels < dp(700f)) 80f else 104f
         }
-        val gap = (size * (if (landscape) 0.16f else 0.12f)).toInt()
-        for (t in listOf(tileNav, tileMusic, tileChats, tileCall)) {
-            val icon = t.findViewById<View>(
-                when (t) {
-                    tileNav -> R.id.tileNavIcon
-                    tileMusic -> R.id.tileMusicIcon
-                    tileChats -> R.id.tileChatsIcon
-                    else -> R.id.tileCallIcon
-                }
-            )
-            icon.layoutParams = icon.layoutParams.apply { width = size; height = size }
-            val lp = t.layoutParams as LinearLayout.LayoutParams
-            lp.setMargins(gap, gap / 2, gap, gap / 2)
-            t.layoutParams = lp
-        }
-        (speedText as TextView).textSize = if (h < 700 * dm.density) 84f else 112f
-        screenDash.requestLayout()
+        buildGrid()
+        updateLink(); updateMedia(); updateBadge()
     }
 
-    private fun m4() = (4 * resources.displayMetrics.density).toInt()
+    private fun buildGrid() {
+        val grid = iconGrid ?: return
+        grid.removeAllViews()
+        chatBadge = null
+        val dm = resources.displayMetrics
+        val land = homeLandscape == true
+        val cols = if (land) 4 else 3
+        val count = if (land) 8 else 6
+        val w = dm.widthPixels.toFloat()
+        val h = dm.heightPixels.toFloat()
+        val size = if (land) minOf((w - dp(120f)) / cols * 0.58f, h * 0.27f).toInt()
+        else minOf((w - dp(36f)) / cols * 0.66f, h * 0.12f).toInt()
+        val slots = Slots.load(this)
+        var row: LinearLayout? = null
+        for (i in 0 until count) {
+            if (i % cols == 0) {
+                row = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    clipChildren = false
+                }
+                grid.addView(
+                    row, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
+                )
+            }
+            row!!.addView(
+                makeTile(i, slots[i], size),
+                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
+            )
+        }
+        updateBadge()
+    }
+
+    /** One round icon with its label. Tap opens it, long-press lets the user change it. */
+    private fun makeTile(index: Int, slot: Slots.Slot, size: Int): View {
+        val cell = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = android.view.Gravity.CENTER
+            clipChildren = false
+            isClickable = true
+            isFocusable = true
+        }
+        val frame = FrameLayout(this).apply { clipChildren = false }
+        val circle = android.widget.ImageView(this).apply {
+            scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+            duplicateParentState = true
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }
+        frame.duplicateParentState = true
+        val label: String
+        val b = slot.builtin
+        if (slot.pkg != null) {
+            label = Slots.label(this, slot.pkg)
+            circle.setBackgroundResource(R.drawable.circle_glass)
+            Slots.icon(this, slot.pkg)?.let { circle.setImageDrawable(it) }
+            val pad = (size * 0.13f).toInt()
+            circle.setPadding(pad, pad, pad, pad)
+        } else {
+            val (bg, icon, text) = when (b) {
+                Slots.NAV -> Triple(R.drawable.circle_nav, R.drawable.ic_tile_nav, getString(R.string.tile_navigate))
+                Slots.MUSIC -> Triple(R.drawable.circle_music, R.drawable.ic_tile_music, getString(R.string.tile_music))
+                Slots.CHATS -> Triple(R.drawable.circle_chats, R.drawable.ic_tile_chats, getString(R.string.tile_chats))
+                Slots.CALL -> Triple(R.drawable.circle_call, R.drawable.ic_tile_call, getString(R.string.tile_call))
+                Slots.APPS -> Triple(R.drawable.circle_glass, R.drawable.ic_grid, getString(R.string.all_apps))
+                else -> Triple(R.drawable.circle_glass, R.drawable.ic_plus, getString(R.string.add_app))
+            }
+            label = text
+            circle.setBackgroundResource(bg)
+            circle.setImageResource(icon)
+            val pad = (size * (if (b == Slots.APPS || b == Slots.EMPTY) 0.32f else 0.25f)).toInt()
+            circle.setPadding(pad, pad, pad, pad)
+        }
+        frame.addView(circle, FrameLayout.LayoutParams(size, size))
+        if (b == Slots.CHATS) {
+            val badge = TextView(this).apply {
+                setBackgroundResource(R.drawable.bg_badge)
+                gravity = android.view.Gravity.CENTER
+                minWidth = dp(28f)
+                setPadding(dp(7f), 0, dp(7f), 0)
+                setTextColor(0xFFFFFFFF.toInt())
+                textSize = 13f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                visibility = View.GONE
+            }
+            frame.addView(badge, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, dp(28f)).apply {
+                gravity = android.view.Gravity.TOP or android.view.Gravity.END
+            })
+            chatBadge = badge
+        }
+        cell.addView(frame, LinearLayout.LayoutParams(size, size))
+        cell.addView(TextView(this).apply {
+            text = label
+            setTextColor(0xFFFFFFFF.toInt())
+            textSize = 14f
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            gravity = android.view.Gravity.CENTER
+            maxWidth = (size * 1.5f).toInt()
+        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(8f)
+        })
+        cell.contentDescription = label
+        cell.setOnClickListener { openSlot(index, slot) }
+        cell.setOnLongClickListener { chooseSlot(index); true }
+        return cell
+    }
+
+    private fun openSlot(index: Int, slot: Slots.Slot) {
+        if (slot.pkg != null) {
+            launchApp(slot.pkg)
+            return
+        }
+        when (slot.builtin) {
+            Slots.NAV -> askDestination()
+            Slots.MUSIC -> show(screenMusic)
+            Slots.CHATS -> show(screenMessages)
+            Slots.CALL -> show(screenCalls)
+            Slots.APPS -> show(screenApps)
+            else -> chooseSlot(index)
+        }
+    }
+
+    private fun launchApp(pkg: String) {
+        val i = packageManager.getLaunchIntentForPackage(pkg)
+        if (i == null) {
+            toast(getString(R.string.cant_open))
+            return
+        }
+        try {
+            startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        } catch (e: Exception) {
+            toast(getString(R.string.cant_open))
+        }
+    }
+
+    /** Long-press: pick a RideDash function or any installed app for this spot. */
+    private fun chooseSlot(index: Int) {
+        val builtinLabels = listOf(
+            getString(R.string.tile_navigate), getString(R.string.tile_music), getString(R.string.tile_chats),
+            getString(R.string.tile_call), getString(R.string.all_apps)
+        )
+        val apps = Slots.launchableApps(this)
+        val labels = (builtinLabels.map { "RideDash · $it" } + apps.map { it.label }).toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle(R.string.choose_icon)
+            .setItems(labels) { _, which ->
+                val list = Slots.load(this)
+                list[index] = if (which < Slots.BUILTINS.size) Slots.Slot(Slots.BUILTINS[which], null)
+                else Slots.Slot(null, apps[which - Slots.BUILTINS.size].pkg)
+                Slots.save(this, list)
+                buildGrid()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    /** Grid of every installed app, 4 per row, round icons. */
+    private fun renderAllApps() {
+        appsList.removeAllViews()
+        val apps = Slots.launchableApps(this)
+        val size = dp(60f)
+        var row: LinearLayout? = null
+        apps.forEachIndexed { i, app ->
+            if (i % 4 == 0) {
+                row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+                appsList.addView(row, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(112f)))
+            }
+            val cell = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = android.view.Gravity.CENTER
+                isClickable = true
+                isFocusable = true
+                contentDescription = app.label
+                setOnClickListener { launchApp(app.pkg) }
+            }
+            cell.addView(android.widget.ImageView(this).apply {
+                setBackgroundResource(R.drawable.circle_glass)
+                Slots.icon(this@MainActivity, app.pkg)?.let { setImageDrawable(it) }
+                val pad = dp(8f)
+                setPadding(pad, pad, pad, pad)
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }, LinearLayout.LayoutParams(size, size))
+            cell.addView(TextView(this).apply {
+                text = app.label
+                setTextColor(0xFFE6E8F5.toInt())
+                textSize = 12f
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                gravity = android.view.Gravity.CENTER
+            }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                topMargin = dp(6f)
+            })
+            row!!.addView(cell, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f))
+        }
+    }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -601,7 +723,7 @@ class MainActivity : AppCompatActivity() {
             mediaArtist.text = m.artist
         }
         btnPlay.setImageResource(if (m?.playing == true) R.drawable.ic_pause_w else R.drawable.ic_play_w)
-        nowPlayingText.text = if (m == null) getString(R.string.nothing_playing)
+        nowPlayingText?.text = if (m == null) getString(R.string.nothing_playing)
         else listOf(m.title, m.artist).filter { it.isNotBlank() }.joinToString(" · ").ifBlank { getString(R.string.unknown_track) }
     }
 

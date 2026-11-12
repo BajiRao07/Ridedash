@@ -59,6 +59,9 @@ object Prefs {
     fun quickReplies(c: Context): List<String> =
         quickRepliesRaw(c).lines().map { it.trim() }.filter { it.isNotEmpty() }
 
+    fun slotsRaw(c: Context): String? = p(c).getString("slots", null)
+    fun setSlotsRaw(c: Context, v: String) = p(c).edit().putString("slots", v).apply()
+
     fun sosRaw(c: Context): String = p(c).getString("sos", "") ?: ""
     fun setSos(c: Context, v: String) = p(c).edit().putString("sos", v.trim()).apply()
 
