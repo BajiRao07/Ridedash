@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var screenMap: View
     private lateinit var screenMessages: View
     private lateinit var screenCalls: View
+    private lateinit var screenMusic: View
     private lateinit var callOverlay: View
     private var current: View? = null
 
@@ -56,11 +57,21 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaTitle: TextView
     private lateinit var mediaArtist: TextView
     private lateinit var btnPlay: ImageButton
-    private lateinit var dashBody: LinearLayout
-    private lateinit var paneA: View
-    private lateinit var paneB: View
-    private lateinit var lastMsgFrom: TextView
-    private lateinit var lastMsgText: TextView
+    private lateinit var speedSmall: TextView
+    private lateinit var speedPill: View
+    private lateinit var bigSpeed: View
+    private lateinit var tilesRow1: LinearLayout
+    private lateinit var tilesRow2: LinearLayout
+    private lateinit var tileNav: View
+    private lateinit var tileMusic: View
+    private lateinit var tileChats: View
+    private lateinit var tileCall: View
+    private lateinit var chatBadge: TextView
+    private lateinit var nowPlayingText: TextView
+    private var seenMessages = 0
+    private var lastLocation: Location? = null
+    private lateinit var appDock: LinearLayout
+    private lateinit var appDockScroll: View
     private lateinit var messageList: LinearLayout
     private lateinit var favList: LinearLayout
     private lateinit var mapContainer: FrameLayout
@@ -90,9 +101,11 @@ class MainActivity : AppCompatActivity() {
     // Implements every method so it never crashes on Android < 11.
     private val locationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
+            lastLocation = location
             val kmh = if (location.hasSpeed()) (location.speed * 3.6f).roundToInt() else 0
             val txt = if (kmh < 2) "0" else kmh.toString()
             speedText.text = txt
+            speedSmall.text = txt
             mapSpeed.text = getString(R.string.kmh_value, txt)
         }
 
@@ -149,6 +162,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         RideHub.addListener(hubListener)
+        buildAppDock()
         applyOrientationSetting()
         applyLayout()
         updateLink(); updateMedia(); updateMessages(); updateCall()
@@ -183,6 +197,7 @@ class MainActivity : AppCompatActivity() {
         screenMap = findViewById(R.id.screenMap)
         screenMessages = findViewById(R.id.screenMessages)
         screenCalls = findViewById(R.id.screenCalls)
+        screenMusic = findViewById(R.id.screenMusic)
         callOverlay = findViewById(R.id.callOverlay)
         speedText = findViewById(R.id.speedText)
         mapSpeed = findViewById(R.id.mapSpeed)
@@ -191,11 +206,19 @@ class MainActivity : AppCompatActivity() {
         mediaTitle = findViewById(R.id.mediaTitle)
         mediaArtist = findViewById(R.id.mediaArtist)
         btnPlay = findViewById(R.id.btnPlay)
-        dashBody = findViewById(R.id.dashBody)
-        paneA = findViewById(R.id.paneA)
-        paneB = findViewById(R.id.paneB)
-        lastMsgFrom = findViewById(R.id.lastMsgFrom)
-        lastMsgText = findViewById(R.id.lastMsgText)
+        speedSmall = findViewById(R.id.speedSmall)
+        speedPill = findViewById(R.id.speedPill)
+        bigSpeed = findViewById(R.id.bigSpeed)
+        tilesRow1 = findViewById(R.id.tilesRow1)
+        tilesRow2 = findViewById(R.id.tilesRow2)
+        tileNav = findViewById(R.id.tileNav)
+        tileMusic = findViewById(R.id.tileMusic)
+        tileChats = findViewById(R.id.tileChats)
+        tileCall = findViewById(R.id.tileCall)
+        chatBadge = findViewById(R.id.chatBadge)
+        nowPlayingText = findViewById(R.id.nowPlayingText)
+        appDock = findViewById(R.id.appDock)
+        appDockScroll = findViewById(R.id.appDockScroll)
         messageList = findViewById(R.id.messageList)
         favList = findViewById(R.id.favList)
         mapContainer = findViewById(R.id.mapContainer)
@@ -210,11 +233,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun wireButtons() {
-        click(R.id.btnNav) { askDestination() }
-        click(R.id.btnMap) { show(screenMap) }
-        click(R.id.btnMessages) { show(screenMessages) }
-        click(R.id.msgCard) { show(screenMessages) }
-        click(R.id.btnCalls) { show(screenCalls) }
+        click(R.id.tileNav) { askDestination() }
+        click(R.id.tileMusic) { show(screenMusic) }
+        click(R.id.nowPlaying) { show(screenMusic) }
+        click(R.id.tileChats) { show(screenMessages) }
+        click(R.id.tileCall) { show(screenCalls) }
+        click(R.id.btnMusicBack) { show(screenDash) }
+        click(R.id.btnOpenPlayer) { openMusicApp() }
+        click(R.id.btnSos) { sos() }
+        click(R.id.btnPhoneHome) { openPhoneHome() }
         click(R.id.btnSetup) { startActivity(Intent(this, SetupActivity::class.java)) }
 
         click(R.id.btnPrev) { Actions.media(this, "prev") }
@@ -240,13 +267,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun show(v: View) {
-        listOf(screenDash, screenMap, screenMessages, screenCalls).forEach {
+        listOf(screenDash, screenMap, screenMessages, screenCalls, screenMusic).forEach {
             it.visibility = if (it === v) View.VISIBLE else View.GONE
         }
         current = v
         when (v) {
             screenMap -> { ensureMap(); map?.onResume() }
-            screenMessages -> renderMessages()
+            screenMessages -> {
+                seenMessages = RideHub.messages.size
+                updateBadge()
+                renderMessages()
+            }
             screenCalls -> renderFavourites()
         }
         if (v !== screenMap) map?.onPause()
@@ -326,8 +357,140 @@ class MainActivity : AppCompatActivity() {
                 val q = input.text.toString().trim()
                 if (q.isNotEmpty()) startNavigation(q)
             }
+            .setNeutralButton(R.string.show_map) { _, _ -> show(screenMap) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    // ---------------- Home, SOS, app shortcuts ----------------
+
+    /** Opens the phone's normal home screen, even when RideDash is set as the home app. */
+    private fun openPhoneHome() {
+        val home = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        val other = try {
+            packageManager.queryIntentActivities(home, 0)
+                .firstOrNull { it.activityInfo.packageName != packageName }
+        } catch (e: Exception) { null }
+        try {
+            if (other != null) {
+                startActivity(
+                    Intent(home).setClassName(other.activityInfo.packageName, other.activityInfo.name)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            } else {
+                startActivity(Intent(home).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
+        } catch (e: Exception) {
+            moveTaskToBack(true)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun bestLocation(): Location? {
+        lastLocation?.let { return it }
+        if (!Perms.location(this)) return null
+        val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return try {
+            lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                ?: lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+        } catch (e: Exception) { null }
+    }
+
+    /** SOS: send live location on WhatsApp (or SMS) and/or call the emergency contact. */
+    private fun sos() {
+        val contact = Prefs.sosContact(this)
+        if (contact == null) {
+            toast(getString(R.string.sos_missing))
+            startActivity(Intent(this, SetupActivity::class.java))
+            return
+        }
+        val (name, number) = contact
+        val loc = bestLocation()
+        val link = if (loc != null) "https://maps.google.com/?q=${loc.latitude},${loc.longitude}"
+        else getString(R.string.sos_no_location)
+        val message = getString(R.string.sos_message, link)
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.sos_title, name))
+            .setMessage(R.string.sos_body)
+            .setPositiveButton(R.string.sos_whatsapp) { _, _ -> sendSosMessage(number, message) }
+            .setNeutralButton(R.string.sos_call) { _, _ ->
+                if (!Actions.dial(this, number)) toast(getString(R.string.cant_call))
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun sendSosMessage(number: String, message: String) {
+        val digits = number.filter { it.isDigit() }
+        val wa = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/$digits?text=" + Uri.encode(message)))
+        for (pkg in listOf("com.whatsapp", "com.whatsapp.w4b")) {
+            try {
+                startActivity(Intent(wa).setPackage(pkg))
+                return
+            } catch (e: ActivityNotFoundException) { }
+        }
+        try {
+            startActivity(
+                Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:" + Uri.encode(number)))
+                    .putExtra("sms_body", message)
+            )
+        } catch (e: Exception) {
+            toast(getString(R.string.cant_open))
+        }
+    }
+
+    /** Shortcuts to popular apps that are installed on this phone. */
+    private fun buildAppDock() {
+        val apps = listOf(
+            "com.whatsapp", "com.whatsapp.w4b", "com.instagram.android",
+            "com.google.android.youtube", "com.google.android.apps.youtube.music",
+            "com.spotify.music", "com.jio.media.jiobeats", "com.gaana",
+            "com.google.android.apps.maps", "org.telegram.messenger"
+        )
+        appDock.removeAllViews()
+        val d = resources.displayMetrics.density
+        for (pkg in apps) {
+            val launch = packageManager.getLaunchIntentForPackage(pkg) ?: continue
+            val icon = try { packageManager.getApplicationIcon(pkg) } catch (e: Exception) { continue }
+            val label = try {
+                packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
+            } catch (e: Exception) { pkg }
+            val iv = android.widget.ImageView(this).apply {
+                setImageDrawable(icon)
+                setBackgroundResource(R.drawable.bg_glass)
+                val pad = (9 * d).toInt()
+                setPadding(pad, pad, pad, pad)
+                contentDescription = label
+                isClickable = true
+                isFocusable = true
+                setOnClickListener {
+                    try {
+                        startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    } catch (e: Exception) {
+                        toast(getString(R.string.cant_open))
+                    }
+                }
+            }
+            val lp = LinearLayout.LayoutParams((60 * d).toInt(), (60 * d).toInt())
+            lp.setMargins((5 * d).toInt(), 0, (5 * d).toInt(), 0)
+            appDock.addView(iv, lp)
+        }
+        appDockScroll.visibility = if (appDock.childCount > 0) View.VISIBLE else View.GONE
+    }
+
+    private fun openMusicApp() {
+        val pi = Local.controller?.sessionActivity
+        try {
+            if (pi != null) { pi.send(); return }
+        } catch (e: Exception) { }
+        try {
+            startActivity(
+                Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_MUSIC)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        } catch (e: Exception) {
+            toast(getString(R.string.no_music_app))
+        }
     }
 
     /** Turn-by-turn via Google Maps in two-wheeler mode, falling back to any maps app. */
@@ -364,26 +527,61 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateBadge() {
+        val unread = RideHub.messages.size - seenMessages
+        chatBadge.visibility = if (unread > 0) View.VISIBLE else View.GONE
+        chatBadge.text = if (unread > 9) "9+" else unread.toString()
+    }
+
+    private fun moveTo(v: View, parent: LinearLayout) {
+        if (v.parent === parent) return
+        (v.parent as? android.view.ViewGroup)?.removeView(v)
+        parent.addView(v)
+    }
+
     /**
-     * Portrait (bike): speed on top, controls below.
-     * Landscape (car): speed on the left, controls on the right.
-     * All sizes use weights and auto-sizing text, so it fits any screen.
+     * Portrait (bike): big speed on top, 2 x 2 app icons.
+     * Landscape (car): speed in the top bar, 4 app icons in one row.
+     * Icon size is worked out from the screen, so it fits any phone.
      */
     private fun applyLayout() {
         val dm = resources.displayMetrics
-        val landscape = dm.widthPixels > dm.heightPixels
+        val w = dm.widthPixels.toFloat()
+        val h = dm.heightPixels.toFloat()
+        val landscape = w > h
+        val size: Int
         if (landscape) {
-            dashBody.orientation = LinearLayout.HORIZONTAL
-            paneA.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
-                .apply { setMargins(m4(), m4(), m4(), m4()) }
-            paneB.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1.6f)
+            moveTo(tileChats, tilesRow1)
+            moveTo(tileCall, tilesRow1)
+            tilesRow2.visibility = View.GONE
+            bigSpeed.visibility = View.GONE
+            speedPill.visibility = View.VISIBLE
+            size = minOf(w * 0.14f, h * 0.27f).toInt()
         } else {
-            dashBody.orientation = LinearLayout.VERTICAL
-            paneA.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
-                .apply { setMargins(m4(), m4(), m4(), m4()) }
-            paneB.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1.5f)
+            moveTo(tileChats, tilesRow2)
+            moveTo(tileCall, tilesRow2)
+            tilesRow2.visibility = View.VISIBLE
+            bigSpeed.visibility = View.VISIBLE
+            speedPill.visibility = View.GONE
+            size = minOf(w * 0.32f, h * 0.15f).toInt()
         }
-        dashBody.requestLayout()
+        val gap = (size * (if (landscape) 0.16f else 0.12f)).toInt()
+        for (t in listOf(tileNav, tileMusic, tileChats, tileCall)) {
+            val icon = t.findViewById<View>(
+                when (t) {
+                    tileNav -> R.id.tileNavIcon
+                    tileMusic -> R.id.tileMusicIcon
+                    tileChats -> R.id.tileChatsIcon
+                    else -> R.id.tileCallIcon
+                }
+            )
+            icon.layoutParams = icon.layoutParams.apply { width = size; height = size }
+            val lp = t.layoutParams as LinearLayout.LayoutParams
+            lp.setMargins(gap, gap / 2, gap, gap / 2)
+            t.layoutParams = lp
+        }
+        (speedText as TextView).textSize = if (h < 700 * dm.density) 84f else 112f
+        screenDash.requestLayout()
     }
 
     private fun m4() = (4 * resources.displayMetrics.density).toInt()
@@ -402,19 +600,18 @@ class MainActivity : AppCompatActivity() {
             mediaTitle.text = m.title.ifBlank { getString(R.string.unknown_track) }
             mediaArtist.text = m.artist
         }
-        btnPlay.setImageResource(if (m?.playing == true) R.drawable.ic_pause else R.drawable.ic_play)
+        btnPlay.setImageResource(if (m?.playing == true) R.drawable.ic_pause_w else R.drawable.ic_play_w)
+        nowPlayingText.text = if (m == null) getString(R.string.nothing_playing)
+        else listOf(m.title, m.artist).filter { it.isNotBlank() }.joinToString(" · ").ifBlank { getString(R.string.unknown_track) }
     }
 
     private fun updateMessages() {
-        val last = RideHub.messages.firstOrNull()
-        if (last == null) {
-            lastMsgFrom.text = getString(R.string.no_messages)
-            lastMsgText.text = ""
-        } else {
-            lastMsgFrom.text = getString(R.string.from_app, last.from, last.app)
-            lastMsgText.text = last.text
+        if (RideHub.messages.size < seenMessages) seenMessages = RideHub.messages.size
+        if (current === screenMessages) {
+            seenMessages = RideHub.messages.size
+            renderMessages()
         }
-        if (current === screenMessages) renderMessages()
+        updateBadge()
 
         val nm = RideHub.lastNewMessage ?: return
         val id = nm.key + nm.text

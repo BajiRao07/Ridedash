@@ -213,6 +213,16 @@
             android:hint="@string/fav_hint"
             android:inputType="text" />
 
+        <TextView
+            style="@style/Heading"
+            android:text="@string/h_sos" />
+
+        <EditText
+            android:id="@+id/sosContact"
+            style="@style/Field"
+            android:hint="@string/sos_hint"
+            android:inputType="text" />
+
         <!-- 5. Quick replies -->
         <TextView
             style="@style/Heading"

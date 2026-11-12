@@ -59,6 +59,20 @@ object Prefs {
     fun quickReplies(c: Context): List<String> =
         quickRepliesRaw(c).lines().map { it.trim() }.filter { it.isNotEmpty() }
 
+    fun sosRaw(c: Context): String = p(c).getString("sos", "") ?: ""
+    fun setSos(c: Context, v: String) = p(c).edit().putString("sos", v.trim()).apply()
+
+    /** SOS contact as (name, number), or null. */
+    fun sosContact(c: Context): Pair<String, String>? {
+        val raw = sosRaw(c)
+        if (raw.isBlank()) return null
+        val idx = raw.lastIndexOf(',')
+        val name = if (idx < 0) raw else raw.substring(0, idx).trim()
+        val num = if (idx < 0) raw.trim() else raw.substring(idx + 1).trim()
+        if (num.count { it.isDigit() } < 6) return null
+        return Pair(name.ifBlank { num }, num)
+    }
+
     /** Favourites stored as "Name, number". */
     fun favRaw(c: Context, i: Int): String = p(c).getString("fav$i", "") ?: ""
     fun setFav(c: Context, i: Int, v: String) = p(c).edit().putString("fav$i", v.trim()).apply()

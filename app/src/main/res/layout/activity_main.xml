@@ -6,21 +6,25 @@
     android:background="@color/bg"
     android:keepScreenOn="true">
 
-    <!-- ===================== DASHBOARD (auto-fits portrait = bike, landscape = car) ===================== -->
+    <!-- ===================== HOME (Aurora launcher) ===================== -->
     <LinearLayout
         android:id="@+id/screenDash"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/bg_glow"
+        android:clipChildren="false"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:paddingLeft="20dp"
+        android:paddingTop="16dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingLeft="4dp"
-            android:paddingRight="4dp">
+            android:orientation="horizontal">
 
             <TextClock
                 android:id="@+id/clock"
@@ -29,214 +33,495 @@
                 android:layout_weight="1"
                 android:format12Hour="h:mm"
                 android:format24Hour="HH:mm"
-                android:textColor="@color/text"
-                android:textSize="26sp"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/linkText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="12dp"
-                android:ellipsize="end"
-                android:maxWidth="180dp"
-                android:maxLines="1"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp" />
-
-            <TextView
-                android:id="@+id/batteryText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/dashBody"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <!-- Pane A: speed -->
             <LinearLayout
-                android:id="@+id/paneA"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_margin="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_card"
+                android:id="@+id/speedPill"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_glass"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:padding="8dp">
+                android:orientation="horizontal"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp"
+                android:visibility="gone">
 
                 <TextView
-                    android:id="@+id/speedText"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:includeFontPadding="false"
-                    android:maxLines="1"
+                    android:id="@+id/speedSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="@color/text"
-                    android:textStyle="bold"
-                    app:autoSizeMaxTextSize="220sp"
-                    app:autoSizeMinTextSize="36sp"
-                    app:autoSizeTextType="uniform" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:letterSpacing="0.2"
+                    android:layout_marginLeft="6dp"
                     android:text="@string/kmh"
-                    android:textColor="@color/accent"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textColor="#9FE9DA"
+                    android:textSize="13sp" />
             </LinearLayout>
 
-            <!-- Pane B: music, message, tiles -->
             <LinearLayout
-                android:id="@+id/paneB"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1.5"
-                android:orientation="vertical">
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end|center_vertical"
+                android:orientation="horizontal">
 
-                <LinearLayout
-                    android:id="@+id/mediaCard"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_margin="4dp"
-                    android:layout_weight="1.2"
-                    android:background="@drawable/bg_card"
-                    android:orientation="vertical"
-                    android:padding="12dp">
+                <TextView
+                    android:id="@+id/linkText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dp"
+                    android:ellipsize="end"
+                    android:maxWidth="160dp"
+                    android:maxLines="1"
+                    android:textColor="#AEB4D0"
+                    android:textSize="13sp" />
 
-                    <TextView
-                        android:id="@+id/mediaTitle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:singleLine="true"
-                        android:textColor="@color/text"
-                        android:textSize="19sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mediaArtist"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:singleLine="true"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="15sp" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_marginTop="6dp"
-                        android:layout_weight="1"
-                        android:minHeight="52dp"
-                        android:orientation="horizontal">
-
-                        <ImageButton
-                            android:id="@+id/btnPrev"
-                            style="@style/IconTile"
-                            android:contentDescription="@string/prev"
-                            android:src="@drawable/ic_prev" />
-
-                        <ImageButton
-                            android:id="@+id/btnPlay"
-                            style="@style/IconTile"
-                            android:background="@drawable/bg_accent"
-                            android:contentDescription="@string/play_pause"
-                            android:src="@drawable/ic_play" />
-
-                        <ImageButton
-                            android:id="@+id/btnNext"
-                            style="@style/IconTile"
-                            android:contentDescription="@string/next"
-                            android:src="@drawable/ic_next" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/msgCard"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_margin="4dp"
-                    android:layout_weight="0.75"
-                    android:background="@drawable/bg_card"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center_vertical"
-                    android:orientation="vertical"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:id="@+id/lastMsgFrom"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:singleLine="true"
-                        android:textColor="@color/accent"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/lastMsgText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="2"
-                        android:textColor="@color/text"
-                        android:textSize="17sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:minHeight="72dp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btnNav"
-                        style="@style/AppTile"
-                        android:background="@drawable/bg_accent"
-                        android:drawableTop="@drawable/ic_navigate"
-                        android:text="@string/go_tile"
-                        android:textColor="#002E14" />
-
-                    <Button
-                        android:id="@+id/btnMap"
-                        style="@style/AppTile"
-                        android:drawableTop="@drawable/ic_map"
-                        android:text="@string/map" />
-
-                    <Button
-                        android:id="@+id/btnMessages"
-                        style="@style/AppTile"
-                        android:drawableTop="@drawable/ic_chat"
-                        android:text="@string/messages" />
-
-                    <Button
-                        android:id="@+id/btnCalls"
-                        style="@style/AppTile"
-                        android:drawableTop="@drawable/ic_call"
-                        android:text="@string/calls" />
-
-                    <Button
-                        android:id="@+id/btnSetup"
-                        style="@style/AppTile"
-                        android:drawableTop="@drawable/ic_tune"
-                        android:text="@string/setup_short" />
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/batteryText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#AEB4D0"
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bigSpeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/speedText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:text="0"
+                android:textColor="#FFFFFF"
+                android:textSize="112sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.35"
+                android:text="KM/H"
+                android:textColor="#4FF0CF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tilesBox"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipChildren="false"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/tilesRow1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/tileNav"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:contentDescription="@string/tile_navigate"
+                    android:focusable="true"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="6dp">
+
+                    <FrameLayout
+                        android:id="@+id/tileNavIcon"
+                        android:duplicateParentState="true"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/tile_nav"
+                            android:duplicateParentState="true"
+                            android:importantForAccessibility="no"
+                            android:padding="28dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_tile_nav" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/tile_navigate"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tileMusic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:contentDescription="@string/tile_music"
+                    android:focusable="true"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="6dp">
+
+                    <FrameLayout
+                        android:id="@+id/tileMusicIcon"
+                        android:duplicateParentState="true"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/tile_music"
+                            android:duplicateParentState="true"
+                            android:importantForAccessibility="no"
+                            android:padding="28dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_tile_music" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/tile_music"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/tilesRow2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/tileChats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:contentDescription="@string/tile_chats"
+                    android:focusable="true"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="6dp">
+
+                    <FrameLayout
+                        android:id="@+id/tileChatsIcon"
+                        android:duplicateParentState="true"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/tile_chats"
+                            android:duplicateParentState="true"
+                            android:importantForAccessibility="no"
+                            android:padding="28dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_tile_chats" />
+                        <TextView
+                            android:id="@+id/chatBadge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="30dp"
+                            android:layout_gravity="top|end"
+                            android:layout_marginTop="-6dp"
+                            android:layout_marginRight="-6dp"
+                            android:background="@drawable/bg_badge"
+                            android:gravity="center"
+                            android:minWidth="30dp"
+                            android:paddingLeft="8dp"
+                            android:paddingRight="8dp"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/tile_chats"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tileCall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:contentDescription="@string/tile_call"
+                    android:focusable="true"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="6dp">
+
+                    <FrameLayout
+                        android:id="@+id/tileCallIcon"
+                        android:duplicateParentState="true"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/tile_call"
+                            android:duplicateParentState="true"
+                            android:importantForAccessibility="no"
+                            android:padding="28dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_tile_call" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/tile_call"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:id="@+id/appDockScroll"
+            android:layout_width="wrap_content"
+            android:layout_height="64dp"
+            android:layout_marginBottom="10dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/appDock"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnSos"
+                android:layout_width="76dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_sos"
+                android:clickable="true"
+                android:contentDescription="@string/sos_desc"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="@string/sos"
+                android:textColor="#FFFFFF"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/nowPlaying"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_glass"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingLeft="14dp"
+                android:paddingRight="14dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_music_small" />
+
+                <TextView
+                    android:id="@+id/nowPlayingText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textColor="#E6E8F5"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/btnPhoneHome"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/bg_glass"
+                android:clickable="true"
+                android:contentDescription="@string/phone_home"
+                android:focusable="true"
+                android:padding="14dp"
+                android:src="@drawable/ic_home_stroke" />
+
+            <ImageView
+                android:id="@+id/btnSetup"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/bg_glass"
+                android:clickable="true"
+                android:contentDescription="@string/settings"
+                android:focusable="true"
+                android:padding="15dp"
+                android:src="@drawable/ic_sliders" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ===================== MUSIC ===================== -->
+    <LinearLayout
+        android:id="@+id/screenMusic"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_glow"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="18dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnMusicBack"
+                style="@style/Tile"
+                android:background="@drawable/bg_glass"
+                android:text="@string/back" />
+
+            <Button
+                android:id="@+id/btnOpenPlayer"
+                style="@style/Tile"
+                android:layout_weight="1.6"
+                android:background="@drawable/bg_glass"
+                android:text="@string/open_music_app"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/musicArt"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:background="@drawable/tile_music"
+            android:importantForAccessibility="no"
+            android:padding="52dp"
+            android:src="@drawable/ic_tile_music" />
+
+        <TextView
+            android:id="@+id/mediaTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:singleLine="true"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/mediaArtist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:singleLine="true"
+            android:textColor="#AEB4D0"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:layout_marginTop="28dp"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btnPrev"
+                style="@style/IconTile"
+                android:background="@drawable/bg_glass"
+                android:contentDescription="@string/prev"
+                android:padding="26dp"
+                android:src="@drawable/ic_prev" />
+
+            <ImageButton
+                android:id="@+id/btnPlay"
+                style="@style/IconTile"
+                android:background="@drawable/tile_music"
+                android:contentDescription="@string/play_pause"
+                android:padding="24dp"
+                android:src="@drawable/ic_play_w" />
+
+            <ImageButton
+                android:id="@+id/btnNext"
+                style="@style/IconTile"
+                android:background="@drawable/bg_glass"
+                android:contentDescription="@string/next"
+                android:padding="26dp"
+                android:src="@drawable/ic_next" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
     </LinearLayout>
 
     <!-- ===================== MAP ===================== -->

@@ -28,6 +28,7 @@ class SetupActivity : AppCompatActivity() {
     private lateinit var fav2: EditText
     private lateinit var fav3: EditText
     private lateinit var quickReplies: EditText
+    private lateinit var sosContact: EditText
     private lateinit var readAloud: CheckBox
     private lateinit var layoutGroup: RadioGroup
     private lateinit var pairingSection: View
@@ -53,6 +54,7 @@ class SetupActivity : AppCompatActivity() {
         fav2 = findViewById(R.id.fav2)
         fav3 = findViewById(R.id.fav3)
         quickReplies = findViewById(R.id.quickReplies)
+        sosContact = findViewById(R.id.sosContact)
         readAloud = findViewById(R.id.readAloud)
         layoutGroup = findViewById(R.id.layoutGroup)
         pairingSection = findViewById(R.id.pairingSection)
@@ -78,6 +80,7 @@ class SetupActivity : AppCompatActivity() {
         fav2.setText(Prefs.favRaw(this, 2))
         fav3.setText(Prefs.favRaw(this, 3))
         quickReplies.setText(Prefs.quickRepliesRaw(this))
+        sosContact.setText(Prefs.sosRaw(this))
         readAloud.isChecked = Prefs.readAloud(this)
 
         findViewById<Button>(R.id.btnNotifAccess).setOnClickListener {
@@ -172,6 +175,7 @@ class SetupActivity : AppCompatActivity() {
         Prefs.setFav(this, 2, fav2.text.toString())
         Prefs.setFav(this, 3, fav3.text.toString())
         Prefs.setQuickReplies(this, quickReplies.text.toString())
+        Prefs.setSos(this, sosContact.text.toString())
         Prefs.setReadAloud(this, readAloud.isChecked)
         Prefs.setSetupDone(this)
     }
