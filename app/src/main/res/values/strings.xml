@@ -6,15 +6,20 @@
     <!-- Dashboard -->
     <string name="kmh">km/h</string>
     <string name="kmh_value">%1$s km/h</string>
-    <string name="map">MAP</string>
-    <string name="messages">MSGS</string>
-    <string name="calls">CALL</string>
-    <string name="setup_short">SETUP</string>
+    <string name="map">Map</string>
+    <string name="messages">Chats</string>
+    <string name="calls">Call</string>
+    <string name="setup_short">Setup</string>
     <string name="back">BACK</string>
     <string name="clear">CLEAR</string>
     <string name="me">ME</string>
     <string name="navigate">NAVIGATE</string>
     <string name="go">Go</string>
+    <string name="go_tile">GO</string>
+    <string name="prev">Previous track</string>
+    <string name="next">Next track</string>
+    <string name="play_pause">Play or pause</string>
+    <string name="standalone">Standalone</string>
     <string name="where_to">Where to?</string>
     <string name="answer">ANSWER</string>
     <string name="reject">REJECT</string>
@@ -50,6 +55,12 @@
     <!-- Setup -->
     <string name="safety">Ride safe: set everything up before you ride. Use voice and big buttons only, keep your eyes on the road and follow local traffic laws.</string>
     <string name="h_mode">1. What is this phone?</string>
+    <string name="mode_standalone">Standalone screen (recommended) – works on its own using your main phone\'s hotspot. Nothing to install on the main phone.</string>
+    <string name="standalone_help">Standalone setup:\n• Turn on your main phone\'s hotspot and connect this phone to it.\n• WhatsApp on this phone → Link as companion device (WhatsApp → Linked devices on your main phone).\n• Google Messages on this phone → Device pairing, to see SMS.\n• Samsung phones: try \"Call &amp; text on other devices\" on both phones for calls.\n• Otherwise answer calls with your car or helmet Bluetooth.</string>
+    <string name="h_layout">Screen layout</string>
+    <string name="layout_auto">Auto – fits any screen (rotate for car mode)</string>
+    <string name="layout_bike">Bike – always portrait</string>
+    <string name="layout_car">Car – always landscape</string>
     <string name="mode_dashboard">Bike dashboard (old phone mounted on the bike)</string>
     <string name="mode_companion">Main phone (sends calls, messages and music to the bike phone)</string>
     <string name="h_perms">2. Permissions</string>

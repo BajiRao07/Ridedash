@@ -1,195 +1,241 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:keepScreenOn="true">
 
-    <!-- ===================== DASHBOARD ===================== -->
+    <!-- ===================== DASHBOARD (auto-fits portrait = bike, landscape = car) ===================== -->
     <LinearLayout
         android:id="@+id/screenDash"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp">
 
             <TextClock
                 android:id="@+id/clock"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:format12Hour="h:mm a"
+                android:format12Hour="h:mm"
                 android:format24Hour="HH:mm"
                 android:textColor="@color/text"
-                android:textSize="28sp"
+                android:textSize="26sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/batteryText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:layout_marginRight="12dp"
-                android:textColor="@color/text_secondary"
-                android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/linkText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="12dp"
                 android:ellipsize="end"
-                android:maxWidth="200dp"
-                android:maxLines="2"
+                android:maxWidth="180dp"
+                android:maxLines="1"
                 android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/batteryText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Speed -->
         <LinearLayout
+            android:id="@+id/dashBody"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:gravity="center"
-            android:minHeight="120dp"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/speedText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:includeFontPadding="false"
-                android:text="0"
-                android:textColor="@color/text"
-                android:textSize="96sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/kmh"
-                android:textColor="@color/accent"
-                android:textSize="20sp" />
-        </LinearLayout>
-
-        <!-- Music -->
-        <LinearLayout
-            android:id="@+id/mediaCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_card"
-            android:orientation="vertical"
-            android:padding="14dp">
-
-            <TextView
-                android:id="@+id/mediaTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:textColor="@color/text"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/mediaArtist"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp" />
-
+            <!-- Pane A: speed -->
             <LinearLayout
+                android:id="@+id/paneA"
                 android:layout_width="match_parent"
-                android:layout_height="72dp"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
+                android:layout_height="0dp"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_card"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="8dp">
 
-                <Button
-                    android:id="@+id/btnPrev"
-                    style="@style/Tile"
-                    android:text="◀◀" />
+                <TextView
+                    android:id="@+id/speedText"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:maxLines="1"
+                    android:text="0"
+                    android:textColor="@color/text"
+                    android:textStyle="bold"
+                    app:autoSizeMaxTextSize="220sp"
+                    app:autoSizeMinTextSize="36sp"
+                    app:autoSizeTextType="uniform" />
 
-                <Button
-                    android:id="@+id/btnPlay"
-                    style="@style/Tile"
-                    android:background="@drawable/bg_accent"
-                    android:text="▶"
-                    android:textSize="28sp" />
-
-                <Button
-                    android:id="@+id/btnNext"
-                    style="@style/Tile"
-                    android:text="▶▶" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.2"
+                    android:text="@string/kmh"
+                    android:textColor="@color/accent"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
             </LinearLayout>
-        </LinearLayout>
 
-        <!-- Latest message -->
-        <LinearLayout
-            android:id="@+id/msgCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/bg_card"
-            android:clickable="true"
-            android:focusable="true"
-            android:orientation="vertical"
-            android:padding="14dp">
-
-            <TextView
-                android:id="@+id/lastMsgFrom"
+            <!-- Pane B: music, message, tiles -->
+            <LinearLayout
+                android:id="@+id/paneB"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:textColor="@color/accent"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:layout_height="0dp"
+                android:layout_weight="1.5"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/lastMsgText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:textColor="@color/text"
-                android:textSize="18sp" />
-        </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/mediaCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_margin="4dp"
+                    android:layout_weight="1.2"
+                    android:background="@drawable/bg_card"
+                    android:orientation="vertical"
+                    android:padding="12dp">
 
-        <!-- Main buttons -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="96dp"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/mediaTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textColor="@color/text"
+                        android:textSize="19sp"
+                        android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/btnMap"
-                style="@style/Tile"
-                android:text="@string/map" />
+                    <TextView
+                        android:id="@+id/mediaArtist"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="15sp" />
 
-            <Button
-                android:id="@+id/btnMessages"
-                style="@style/Tile"
-                android:text="@string/messages" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_weight="1"
+                        android:minHeight="52dp"
+                        android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btnCalls"
-                style="@style/Tile"
-                android:text="@string/calls" />
+                        <ImageButton
+                            android:id="@+id/btnPrev"
+                            style="@style/IconTile"
+                            android:contentDescription="@string/prev"
+                            android:src="@drawable/ic_prev" />
 
-            <Button
-                android:id="@+id/btnSetup"
-                style="@style/Tile"
-                android:text="@string/setup_short"
-                android:textSize="16sp" />
+                        <ImageButton
+                            android:id="@+id/btnPlay"
+                            style="@style/IconTile"
+                            android:background="@drawable/bg_accent"
+                            android:contentDescription="@string/play_pause"
+                            android:src="@drawable/ic_play" />
+
+                        <ImageButton
+                            android:id="@+id/btnNext"
+                            style="@style/IconTile"
+                            android:contentDescription="@string/next"
+                            android:src="@drawable/ic_next" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/msgCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_margin="4dp"
+                    android:layout_weight="0.75"
+                    android:background="@drawable/bg_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:id="@+id/lastMsgFrom"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textColor="@color/accent"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/lastMsgText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:textColor="@color/text"
+                        android:textSize="17sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:minHeight="72dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnNav"
+                        style="@style/AppTile"
+                        android:background="@drawable/bg_accent"
+                        android:drawableTop="@drawable/ic_navigate"
+                        android:text="@string/go_tile"
+                        android:textColor="#002E14" />
+
+                    <Button
+                        android:id="@+id/btnMap"
+                        style="@style/AppTile"
+                        android:drawableTop="@drawable/ic_map"
+                        android:text="@string/map" />
+
+                    <Button
+                        android:id="@+id/btnMessages"
+                        style="@style/AppTile"
+                        android:drawableTop="@drawable/ic_chat"
+                        android:text="@string/messages" />
+
+                    <Button
+                        android:id="@+id/btnCalls"
+                        style="@style/AppTile"
+                        android:drawableTop="@drawable/ic_call"
+                        android:text="@string/calls" />
+
+                    <Button
+                        android:id="@+id/btnSetup"
+                        style="@style/AppTile"
+                        android:drawableTop="@drawable/ic_tune"
+                        android:text="@string/setup_short" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

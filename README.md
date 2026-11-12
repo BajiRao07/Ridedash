@@ -6,7 +6,19 @@ incoming call answer/reject and 3 favourite contacts.
 
 Runs on **Android 5.0 (API 21) and newer**.
 
-## How it works
+## Modes
+
+- **Standalone (default, recommended):** the old phone works on its own using the
+  main phone's hotspot. Google Maps, music, WhatsApp (linked device) and SMS
+  (Google Messages device pairing) run on the old phone. Nothing is installed on
+  the main phone.
+- **Bike dashboard + Main phone:** optional two-phone mode with the encrypted link
+  below, for calls and messages forwarded from the main phone.
+
+The dashboard auto-fits any screen: portrait = bike layout, landscape = car layout
+(lockable in Setup → Screen layout).
+
+## How it works (two-phone mode)
 
 | Phone | Mode in Setup | What it does |
 |---|---|---|

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -28,6 +29,9 @@ class SetupActivity : AppCompatActivity() {
     private lateinit var fav3: EditText
     private lateinit var quickReplies: EditText
     private lateinit var readAloud: CheckBox
+    private lateinit var layoutGroup: RadioGroup
+    private lateinit var pairingSection: View
+    private lateinit var standaloneHelp: View
 
     private val hubListener: (RideHub.Change) -> Unit = { change ->
         when (change) {
@@ -50,8 +54,26 @@ class SetupActivity : AppCompatActivity() {
         fav3 = findViewById(R.id.fav3)
         quickReplies = findViewById(R.id.quickReplies)
         readAloud = findViewById(R.id.readAloud)
+        layoutGroup = findViewById(R.id.layoutGroup)
+        pairingSection = findViewById(R.id.pairingSection)
+        standaloneHelp = findViewById(R.id.standaloneHelp)
 
-        modeGroup.check(if (Prefs.isCompanion(this)) R.id.modeCompanion else R.id.modeDashboard)
+        modeGroup.check(
+            when (Prefs.mode(this)) {
+                Prefs.MODE_COMPANION -> R.id.modeCompanion
+                Prefs.MODE_DASHBOARD -> R.id.modeDashboard
+                else -> R.id.modeStandalone
+            }
+        )
+        layoutGroup.check(
+            when (Prefs.layoutMode(this)) {
+                Prefs.LAYOUT_BIKE -> R.id.layoutBike
+                Prefs.LAYOUT_CAR -> R.id.layoutCar
+                else -> R.id.layoutAuto
+            }
+        )
+        modeGroup.setOnCheckedChangeListener { _, _ -> updateSections() }
+        updateSections()
         fav1.setText(Prefs.favRaw(this, 1))
         fav2.setText(Prefs.favRaw(this, 2))
         fav3.setText(Prefs.favRaw(this, 3))
@@ -115,16 +137,37 @@ class SetupActivity : AppCompatActivity() {
         }
     }
 
-    private fun selectedCompanion() = modeGroup.checkedRadioButtonId == R.id.modeCompanion
+    private fun selectedMode(): String = when (modeGroup.checkedRadioButtonId) {
+        R.id.modeCompanion -> Prefs.MODE_COMPANION
+        R.id.modeDashboard -> Prefs.MODE_DASHBOARD
+        else -> Prefs.MODE_STANDALONE
+    }
+
+    private fun selectedCompanion() = selectedMode() == Prefs.MODE_COMPANION
+
+    /** Standalone needs no pairing: show its setup tips instead. */
+    private fun updateSections() {
+        val standalone = selectedMode() == Prefs.MODE_STANDALONE
+        pairingSection.visibility = if (standalone) View.GONE else View.VISIBLE
+        standaloneHelp.visibility = if (standalone) View.VISIBLE else View.GONE
+    }
 
     private fun saveSettings() {
-        val companion = selectedCompanion()
-        if (companion != Prefs.isCompanion(this)) {
+        val mode = selectedMode()
+        if (mode != Prefs.mode(this)) {
             // Changing role invalidates any existing pairing.
             SecureStore.clear(this)
             Prefs.clearPeer(this)
         }
-        Prefs.setMode(this, if (companion) Prefs.MODE_COMPANION else Prefs.MODE_DASHBOARD)
+        Prefs.setMode(this, mode)
+        Prefs.setLayoutMode(
+            this,
+            when (layoutGroup.checkedRadioButtonId) {
+                R.id.layoutBike -> Prefs.LAYOUT_BIKE
+                R.id.layoutCar -> Prefs.LAYOUT_CAR
+                else -> Prefs.LAYOUT_AUTO
+            }
+        )
         Prefs.setFav(this, 1, fav1.text.toString())
         Prefs.setFav(this, 2, fav2.text.toString())
         Prefs.setFav(this, 3, fav3.text.toString())
@@ -143,7 +186,7 @@ class SetupActivity : AppCompatActivity() {
 
     /** Bike phone: open a 3-minute pairing window. */
     private fun startPairingOnBike() {
-        if (selectedCompanion()) { toast(getString(R.string.wrong_mode_dash)); return }
+        if (selectedMode() != Prefs.MODE_DASHBOARD) { toast(getString(R.string.wrong_mode_dash)); return }
         if (!checkBluetoothReady()) return
         saveSettings()
         Prefs.openPairing(this)
@@ -200,7 +243,7 @@ class SetupActivity : AppCompatActivity() {
 
     private fun saveAndStart() {
         saveSettings()
-        LinkService.restart(this)
+        if (Prefs.isStandalone(this)) LinkService.stop(this) else LinkService.restart(this)
         if (!Perms.notifAccess(this)) toast(getString(R.string.notif_reminder))
         finish()
     }

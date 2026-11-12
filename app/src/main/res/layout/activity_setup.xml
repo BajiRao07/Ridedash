@@ -34,6 +34,15 @@
             android:layout_marginTop="6dp">
 
             <RadioButton
+                android:id="@+id/modeStandalone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="52dp"
+                android:text="@string/mode_standalone"
+                android:textColor="@color/text"
+                android:textSize="17sp" />
+
+            <RadioButton
                 android:id="@+id/modeDashboard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -48,6 +57,53 @@
                 android:layout_height="wrap_content"
                 android:minHeight="52dp"
                 android:text="@string/mode_companion"
+                android:textColor="@color/text"
+                android:textSize="17sp" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/standaloneHelp"
+            style="@style/Body"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card"
+            android:lineSpacingExtra="3dp"
+            android:padding="12dp"
+            android:text="@string/standalone_help" />
+
+        <TextView
+            style="@style/Heading"
+            android:text="@string/h_layout" />
+
+        <RadioGroup
+            android:id="@+id/layoutGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp">
+
+            <RadioButton
+                android:id="@+id/layoutAuto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="@string/layout_auto"
+                android:textColor="@color/text"
+                android:textSize="17sp" />
+
+            <RadioButton
+                android:id="@+id/layoutBike"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="@string/layout_bike"
+                android:textColor="@color/text"
+                android:textSize="17sp" />
+
+            <RadioButton
+                android:id="@+id/layoutCar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="@string/layout_car"
                 android:textColor="@color/text"
                 android:textSize="17sp" />
         </RadioGroup>
@@ -83,49 +139,56 @@
             style="@style/SetupBtn"
             android:text="@string/btn_battery" />
 
-        <!-- 3. Link -->
-        <TextView
-            style="@style/Heading"
-            android:text="@string/h_link" />
+        <LinearLayout
+            android:id="@+id/pairingSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-        <TextView
-            style="@style/Body"
-            android:text="@string/link_help" />
+            <!-- 3. Link -->
+            <TextView
+                style="@style/Heading"
+                android:text="@string/h_link" />
 
-        <TextView
-            android:id="@+id/peerText"
-            style="@style/Body"
-            android:textColor="@color/text"
-            android:textStyle="bold" />
+            <TextView
+                style="@style/Body"
+                android:text="@string/link_help" />
 
-        <TextView
-            android:id="@+id/linkStatusText"
-            style="@style/Body" />
+            <TextView
+                android:id="@+id/peerText"
+                style="@style/Body"
+                android:textColor="@color/text"
+                android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/btnBluetooth"
-            style="@style/SetupBtn"
-            android:text="@string/btn_bt_settings" />
+            <TextView
+                android:id="@+id/linkStatusText"
+                style="@style/Body" />
 
-        <Button
-            android:id="@+id/btnStartPairing"
-            style="@style/SetupBtn"
-            android:text="@string/btn_start_pairing" />
+            <Button
+                android:id="@+id/btnBluetooth"
+                style="@style/SetupBtn"
+                android:text="@string/btn_bt_settings" />
 
-        <Button
-            android:id="@+id/btnPickPeer"
-            style="@style/SetupBtn"
-            android:text="@string/btn_pick_peer" />
+            <Button
+                android:id="@+id/btnStartPairing"
+                style="@style/SetupBtn"
+                android:text="@string/btn_start_pairing" />
 
-        <Button
-            android:id="@+id/btnPairNow"
-            style="@style/SetupBtn"
-            android:text="@string/btn_pair_now" />
+            <Button
+                android:id="@+id/btnPickPeer"
+                style="@style/SetupBtn"
+                android:text="@string/btn_pick_peer" />
 
-        <Button
-            android:id="@+id/btnForget"
-            style="@style/SetupBtn"
-            android:text="@string/btn_forget" />
+            <Button
+                android:id="@+id/btnPairNow"
+                style="@style/SetupBtn"
+                android:text="@string/btn_pair_now" />
+
+            <Button
+                android:id="@+id/btnForget"
+                style="@style/SetupBtn"
+                android:text="@string/btn_forget" />
+        </LinearLayout>
 
         <!-- 4. Favourites -->
         <TextView

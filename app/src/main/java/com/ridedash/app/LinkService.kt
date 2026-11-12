@@ -62,7 +62,7 @@ class LinkService : Service() {
         val isConnected: Boolean get() = instance?.connected == true
 
         fun start(c: Context) {
-            if (!Perms.bluetooth(c)) return
+            if (Prefs.isStandalone(c) || !Perms.bluetooth(c)) return
             try {
                 ContextCompat.startForegroundService(c, Intent(c, LinkService::class.java))
             } catch (e: Exception) { }

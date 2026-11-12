@@ -18,6 +18,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageButton
+import android.content.pm.ActivityInfo
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
@@ -53,7 +55,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var linkText: TextView
     private lateinit var mediaTitle: TextView
     private lateinit var mediaArtist: TextView
-    private lateinit var btnPlay: Button
+    private lateinit var btnPlay: ImageButton
+    private lateinit var dashBody: LinearLayout
+    private lateinit var paneA: View
+    private lateinit var paneB: View
     private lateinit var lastMsgFrom: TextView
     private lateinit var lastMsgText: TextView
     private lateinit var messageList: LinearLayout
@@ -123,6 +128,7 @@ class MainActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         bindViews()
         wireButtons()
+        applyLayout()
         show(screenDash)
 
         tts = TextToSpeech(this) { st ->
@@ -143,6 +149,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         RideHub.addListener(hubListener)
+        applyOrientationSetting()
+        applyLayout()
         updateLink(); updateMedia(); updateMessages(); updateCall()
         PairingDialog.update(this)
         startGps()
@@ -183,6 +191,9 @@ class MainActivity : AppCompatActivity() {
         mediaTitle = findViewById(R.id.mediaTitle)
         mediaArtist = findViewById(R.id.mediaArtist)
         btnPlay = findViewById(R.id.btnPlay)
+        dashBody = findViewById(R.id.dashBody)
+        paneA = findViewById(R.id.paneA)
+        paneB = findViewById(R.id.paneB)
         lastMsgFrom = findViewById(R.id.lastMsgFrom)
         lastMsgText = findViewById(R.id.lastMsgText)
         messageList = findViewById(R.id.messageList)
@@ -199,6 +210,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun wireButtons() {
+        click(R.id.btnNav) { askDestination() }
         click(R.id.btnMap) { show(screenMap) }
         click(R.id.btnMessages) { show(screenMessages) }
         click(R.id.msgCard) { show(screenMessages) }
@@ -338,7 +350,47 @@ class MainActivity : AppCompatActivity() {
     // ---------------- UI updates ----------------
 
     private fun updateLink() {
-        linkText.text = RideHub.linkStatus
+        linkText.text = if (Prefs.isStandalone(this)) "" else RideHub.linkStatus
+    }
+
+    // ---------------- auto-fit layout ----------------
+
+    /** Lock orientation if the user chose Bike or Car layout in Setup. */
+    private fun applyOrientationSetting() {
+        requestedOrientation = when (Prefs.layoutMode(this)) {
+            Prefs.LAYOUT_BIKE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+            Prefs.LAYOUT_CAR -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            else -> ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+        }
+    }
+
+    /**
+     * Portrait (bike): speed on top, controls below.
+     * Landscape (car): speed on the left, controls on the right.
+     * All sizes use weights and auto-sizing text, so it fits any screen.
+     */
+    private fun applyLayout() {
+        val dm = resources.displayMetrics
+        val landscape = dm.widthPixels > dm.heightPixels
+        if (landscape) {
+            dashBody.orientation = LinearLayout.HORIZONTAL
+            paneA.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
+                .apply { setMargins(m4(), m4(), m4(), m4()) }
+            paneB.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1.6f)
+        } else {
+            dashBody.orientation = LinearLayout.VERTICAL
+            paneA.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
+                .apply { setMargins(m4(), m4(), m4(), m4()) }
+            paneB.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1.5f)
+        }
+        dashBody.requestLayout()
+    }
+
+    private fun m4() = (4 * resources.displayMetrics.density).toInt()
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyLayout()
     }
 
     private fun updateMedia() {
@@ -350,7 +402,7 @@ class MainActivity : AppCompatActivity() {
             mediaTitle.text = m.title.ifBlank { getString(R.string.unknown_track) }
             mediaArtist.text = m.artist
         }
-        btnPlay.text = if (m?.playing == true) "II" else "▶"
+        btnPlay.setImageResource(if (m?.playing == true) R.drawable.ic_pause else R.drawable.ic_play)
     }
 
     private fun updateMessages() {

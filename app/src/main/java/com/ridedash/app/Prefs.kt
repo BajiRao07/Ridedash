@@ -10,15 +10,24 @@ import androidx.core.content.ContextCompat
 object Prefs {
     const val MODE_DASHBOARD = "dashboard"
     const val MODE_COMPANION = "companion"
+    const val MODE_STANDALONE = "standalone"
+
+    const val LAYOUT_AUTO = "auto"
+    const val LAYOUT_BIKE = "bike"
+    const val LAYOUT_CAR = "car"
 
     private const val DEFAULT_REPLIES =
         "Riding now, will call you later\nOn my bike, reach in 10 minutes\nOK\nCall you soon"
 
     private fun p(c: Context) = c.getSharedPreferences("ridedash", Context.MODE_PRIVATE)
 
-    fun mode(c: Context): String = p(c).getString("mode", MODE_DASHBOARD) ?: MODE_DASHBOARD
+    fun mode(c: Context): String = p(c).getString("mode", MODE_STANDALONE) ?: MODE_STANDALONE
     fun setMode(c: Context, v: String) = p(c).edit().putString("mode", v).apply()
     fun isCompanion(c: Context) = mode(c) == MODE_COMPANION
+    fun isStandalone(c: Context) = mode(c) == MODE_STANDALONE
+
+    fun layoutMode(c: Context): String = p(c).getString("layout", LAYOUT_AUTO) ?: LAYOUT_AUTO
+    fun setLayoutMode(c: Context, v: String) = p(c).edit().putString("layout", v).apply()
 
     fun peerAddress(c: Context): String? = p(c).getString("peer_addr", null)
     fun peerName(c: Context): String = p(c).getString("peer_name", "") ?: ""
