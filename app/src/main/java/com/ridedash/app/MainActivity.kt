@@ -557,10 +557,10 @@ class MainActivity : AppCompatActivity() {
         val frame = FrameLayout(this).apply { clipChildren = false }
         val circle = android.widget.ImageView(this).apply {
             scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
-            duplicateParentState = true
+            isDuplicateParentStateEnabled = true
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
         }
-        frame.duplicateParentState = true
+        frame.isDuplicateParentStateEnabled = true
         val label: String
         val b = slot.builtin
         if (slot.pkg != null) {
