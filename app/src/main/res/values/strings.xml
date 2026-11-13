@@ -221,4 +221,22 @@
     <string name="set_mode_main">On · this is the main phone</string>
     <string name="set_version">Version %1$s</string>
     <string name="set_privacy">Privacy</string>
+
+    <!-- Safe riding -->
+    <string name="tile_calendar">Calendar</string>
+    <string name="lock_msg">%1$s is paused while you ride</string>
+    <string name="speed_alert_tts">Slow down. You are at %1$d.</string>
+    <string name="voice_reply">🎤  Speak a reply</string>
+    <string name="voice_prompt">Reply to %1$s</string>
+    <string name="voice_unavailable">Voice typing is not available on this phone</string>
+    <string name="voice_send">Send</string>
+    <string name="set_riding_safety">Riding safety</string>
+    <string name="set_off">Off</string>
+    <string name="set_speed">Speed alert</string>
+    <string name="set_speed_sub">Beep and voice warning above %1$d km/h</string>
+    <string name="set_lock">Riding lock</string>
+    <string name="set_lock_sub">Pauses YouTube, Instagram and other video or social apps while you move</string>
+    <string name="set_autoreply">Auto-reply while riding</string>
+    <string name="set_autoreply_sub">Tells WhatsApp senders you are riding. Once every 30 min per chat</string>
+    <string name="set_autoreply_text">Auto-reply message</string>
 </resources>

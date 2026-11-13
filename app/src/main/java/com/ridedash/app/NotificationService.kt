@@ -86,6 +86,7 @@ class NotificationService : NotificationListenerService() {
             pickController(activeSessions())
         } catch (e: Exception) { /* access not granted yet */ }
 
+        updateBadges()
         if (!receiverOn) {
             try {
                 ContextCompat.registerReceiver(
@@ -201,9 +202,43 @@ class NotificationService : NotificationListenerService() {
         )
         RideHub.addMessage(msg)
         if (Prefs.isCompanion(this)) LinkService.send(Proto.msg(msg))
+        updateBadges()
+        maybeAutoReply(msg)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         sbn?.key?.let { Local.replyActions.remove(it) }
+        updateBadges()
+    }
+
+    /** Counts unread messages per app from the notifications still showing. */
+    private fun updateBadges() {
+        val counts = HashMap<String, Int>()
+        try {
+            for (s in activeNotifications ?: emptyArray()) {
+                if (s.packageName == packageName || s.isOngoing) continue
+                val n = s.notification ?: continue
+                if ((n.flags and Notification.FLAG_GROUP_SUMMARY) != 0) continue
+                if (n.category == Notification.CATEGORY_CALL) continue
+                val isMsg = n.category == Notification.CATEGORY_MESSAGE || MSG_APPS.containsKey(s.packageName)
+                if (!isMsg) continue
+                val msgs = n.extras?.getParcelableArray(Notification.EXTRA_MESSAGES)?.size ?: 0
+                counts[s.packageName] = (counts[s.packageName] ?: 0) + maxOf(1, msgs)
+            }
+        } catch (e: Exception) { }
+        RideHub.setBadges(counts)
+    }
+
+    private val lastAutoReply = HashMap<String, Long>()
+
+    /** Opt-in: tells the sender you are riding. Only while moving, at most once per 30 min per chat. */
+    private fun maybeAutoReply(msg: RideHub.Msg) {
+        if (!Prefs.autoReply(this) || !msg.canReply || RideHub.speedKmh < 15) return
+        if (Prefs.isCompanion(this)) return
+        val who = msg.app + "|" + msg.from
+        val now = System.currentTimeMillis()
+        if (now - (lastAutoReply[who] ?: 0L) < 30 * 60_000L) return
+        lastAutoReply[who] = now
+        Local.reply(this, msg.key, Prefs.autoReplyText(this))
     }
 }

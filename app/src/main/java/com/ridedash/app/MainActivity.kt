@@ -42,6 +42,10 @@ import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        private const val VOICE_REQ = 31
+    }
+
     private lateinit var screenDash: View
     private lateinit var screenMap: View
     private lateinit var screenMessages: View
@@ -62,6 +66,9 @@ class MainActivity : AppCompatActivity() {
     private var linkText: TextView? = null
     private var nowPlayingText: TextView? = null
     private var chatBadge: TextView? = null
+    private val appBadges = HashMap<String, TextView>()
+    private var lastSpeedAlert = 0L
+    private var pendingVoiceReply: RideHub.Msg? = null
     private var iconGrid: LinearLayout? = null
     private var homeLandscape: Boolean? = null
     private var lastSpeed = "0"
@@ -95,6 +102,7 @@ class MainActivity : AppCompatActivity() {
             RideHub.Change.CALL -> updateCall()
             RideHub.Change.LINK -> updateLink()
             RideHub.Change.PAIRING -> PairingDialog.update(this)
+            RideHub.Change.BADGES -> updateBadge()
         }
     }
 
@@ -103,6 +111,8 @@ class MainActivity : AppCompatActivity() {
         override fun onLocationChanged(location: Location) {
             lastLocation = location
             val kmh = if (location.hasSpeed()) (location.speed * 3.6f).roundToInt() else 0
+            RideHub.speedKmh = kmh
+            checkSpeedAlert(kmh)
             val txt = if (kmh < 2) "0" else kmh.toString()
             lastSpeed = txt
             speedText?.text = txt
@@ -601,10 +611,71 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateBadge() {
-        val unread = RideHub.messages.size - seenMessages
-        val b = chatBadge ?: return
-        b.visibility = if (unread > 0) View.VISIBLE else View.GONE
-        b.text = if (unread > 9) "9+" else unread.toString()
+        fun set(b: TextView, n: Int) {
+            b.visibility = if (n > 0) View.VISIBLE else View.GONE
+            b.text = if (n > 99) "99+" else n.toString()
+        }
+        chatBadge?.let { set(it, RideHub.messages.size - seenMessages) }
+        for ((pkg, b) in appBadges) set(b, RideHub.badges[pkg] ?: 0)
+    }
+
+    /** White round calendar face: weekday in red, date in big dark digits. */
+    private fun calendarFace(size: Int): View {
+        val now = java.util.Calendar.getInstance()
+        val day = java.text.SimpleDateFormat("EEE", Locale.getDefault()).format(now.time).uppercase(Locale.getDefault())
+        val col = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = android.view.Gravity.CENTER
+            isDuplicateParentStateEnabled = true
+            elevation = dp(9f).toFloat()
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }
+        col.addView(TextView(this).apply {
+            text = day
+            setTextColor(0xFFE5383B.toInt())
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, size * 0.15f)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            includeFontPadding = false
+        })
+        col.addView(TextView(this).apply {
+            text = now.get(java.util.Calendar.DAY_OF_MONTH).toString()
+            setTextColor(0xFF15192B.toInt())
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, size * 0.40f)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            includeFontPadding = false
+        })
+        return col
+    }
+
+    private fun openCalendar() {
+        try {
+            startActivity(
+                Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_CALENDAR)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+            return
+        } catch (e: Exception) { }
+        for (pkg in listOf("com.samsung.android.calendar", "com.google.android.calendar")) {
+            if (Slots.isInstalled(this, pkg)) { launchApp(pkg); return }
+        }
+        toast(getString(R.string.cant_open))
+    }
+
+    /** Beep + "slow down" when over the limit set in Settings (at most every 20 s). */
+    private fun checkSpeedAlert(kmh: Int) {
+        val limit = Prefs.speedLimit(this)
+        val over = limit > 0 && kmh > limit
+        speedText?.setTextColor(if (over) 0xFFFF4D5E.toInt() else 0xFFFFFFFF.toInt())
+        speedSmall?.setTextColor(if (over) 0xFFFF4D5E.toInt() else 0xFFFFFFFF.toInt())
+        if (!over) return
+        val now = System.currentTimeMillis()
+        if (now - lastSpeedAlert < 20_000) return
+        lastSpeedAlert = now
+        try {
+            android.media.ToneGenerator(android.media.AudioManager.STREAM_NOTIFICATION, 90)
+                .startTone(android.media.ToneGenerator.TONE_PROP_BEEP2, 400)
+        } catch (e: Exception) { }
+        speak(getString(R.string.speed_alert_tts, kmh))
     }
 
     private fun dp(v: Float) = (v * resources.displayMetrics.density).toInt()
@@ -646,6 +717,7 @@ class MainActivity : AppCompatActivity() {
         val grid = iconGrid ?: return
         grid.removeAllViews()
         chatBadge = null
+        appBadges.clear()
         val dm = resources.displayMetrics
         val land = homeLandscape == true
         val cols = if (land) 4 else 3
@@ -707,11 +779,13 @@ class MainActivity : AppCompatActivity() {
                 Slots.CHATS -> Triple(R.drawable.circle_chats, R.drawable.ic_tile_chats, getString(R.string.tile_chats))
                 Slots.CALL -> Triple(R.drawable.circle_call, R.drawable.ic_tile_call, getString(R.string.tile_call))
                 Slots.APPS -> Triple(R.drawable.circle_glass, R.drawable.ic_grid, getString(R.string.all_apps))
+                Slots.SETTINGS -> Triple(R.drawable.circle_settings, R.drawable.ic_gear, getString(R.string.settings))
+                Slots.CALENDAR -> Triple(R.drawable.circle_white, 0, getString(R.string.tile_calendar))
                 else -> Triple(R.drawable.circle_glass, R.drawable.ic_plus, getString(R.string.add_app))
             }
             label = text
             circle.setBackgroundResource(bg)
-            circle.setImageResource(icon)
+            if (icon != 0) circle.setImageResource(icon)
             val pad = (size * (if (b == Slots.APPS || b == Slots.EMPTY) 0.32f else 0.22f)).toInt()
             circle.setPadding(pad, pad, pad, pad)
         }
@@ -722,7 +796,8 @@ class MainActivity : AppCompatActivity() {
         }
         circle.elevation = dp(if (slot.pkg == null && b != Slots.EMPTY && b != Slots.APPS) 8f else 3f).toFloat()
         frame.addView(circle, FrameLayout.LayoutParams(size, size))
-        if (b == Slots.CHATS) {
+        if (b == Slots.CALENDAR) frame.addView(calendarFace(size), FrameLayout.LayoutParams(size, size))
+        if (b == Slots.CHATS || slot.pkg != null) {
             val badge = TextView(this).apply {
                 setBackgroundResource(R.drawable.bg_badge)
                 gravity = android.view.Gravity.CENTER
@@ -736,7 +811,7 @@ class MainActivity : AppCompatActivity() {
             frame.addView(badge, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, dp(28f)).apply {
                 gravity = android.view.Gravity.TOP or android.view.Gravity.END
             })
-            chatBadge = badge
+            if (slot.pkg != null) appBadges[slot.pkg] = badge else chatBadge = badge
         }
         cell.addView(frame, LinearLayout.LayoutParams(size, size))
         cell.addView(TextView(this).apply {
@@ -767,11 +842,19 @@ class MainActivity : AppCompatActivity() {
             Slots.CHATS -> show(screenMessages)
             Slots.CALL -> show(screenCalls)
             Slots.APPS -> show(screenApps)
+            Slots.CALENDAR -> openCalendar()
+            Slots.SETTINGS -> startActivity(Intent(this, SettingsActivity::class.java))
             else -> chooseSlot(index)
         }
     }
 
     private fun launchApp(pkg: String) {
+        if (Prefs.ridingLock(this) && pkg in Slots.DISTRACTING && RideHub.speedKmh >= 10) {
+            val name = Slots.label(this, pkg)
+            toast(getString(R.string.lock_msg, name))
+            speak(getString(R.string.lock_msg, name))
+            return
+        }
         val i = packageManager.getLaunchIntentForPackage(pkg)
         if (i == null) {
             toast(getString(R.string.cant_open))
@@ -788,7 +871,8 @@ class MainActivity : AppCompatActivity() {
     private fun chooseSlot(index: Int) {
         val builtinLabels = listOf(
             getString(R.string.tile_navigate), getString(R.string.tile_music), getString(R.string.tile_chats),
-            getString(R.string.tile_call), getString(R.string.all_apps)
+            getString(R.string.tile_call), getString(R.string.tile_calendar), getString(R.string.settings),
+            getString(R.string.all_apps)
         )
         val apps = Slots.launchableApps(this)
         val labels = (builtinLabels.map { "RideDash · $it" } + apps.map { it.label }).toTypedArray()
@@ -938,15 +1022,49 @@ class MainActivity : AppCompatActivity() {
 
     private fun chooseReply(m: RideHub.Msg) {
         val replies = Prefs.quickReplies(this)
-        if (replies.isEmpty()) {
-            toast(getString(R.string.add_replies))
-            return
-        }
+        val items = listOf(getString(R.string.voice_reply)) + replies
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.reply_to, m.from))
-            .setItems(replies.toTypedArray()) { _, i ->
-                val ok = Actions.reply(this, m, replies[i])
+            .setItems(items.toTypedArray()) { _, i ->
+                if (i == 0) {
+                    startVoiceReply(m)
+                    return@setItems
+                }
+                val ok = Actions.reply(this, m, replies[i - 1])
                 toast(getString(if (ok) R.string.sent else R.string.cant_reply))
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    /** Speak a reply: Android's speech-to-text, then confirm before sending. */
+    @Suppress("DEPRECATION")
+    private fun startVoiceReply(m: RideHub.Msg) {
+        pendingVoiceReply = m
+        val i = Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            .putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            .putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, getString(R.string.voice_prompt, m.from))
+        try {
+            startActivityForResult(i, VOICE_REQ)
+        } catch (e: Exception) {
+            toast(getString(R.string.voice_unavailable))
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != VOICE_REQ || resultCode != RESULT_OK) return
+        val m = pendingVoiceReply ?: return
+        val said = data?.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS)?.firstOrNull() ?: return
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.reply_to, m.from))
+            .setMessage("“$said”")
+            .setPositiveButton(R.string.voice_send) { _, _ ->
+                val ok = Actions.reply(this, m, said)
+                toast(getString(if (ok) R.string.sent else R.string.cant_reply))
+                if (ok) speak(getString(R.string.sent))
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()

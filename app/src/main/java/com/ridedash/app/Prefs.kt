@@ -80,6 +80,24 @@ object Prefs {
     fun slotsMigrated(c: Context) = p(c).getBoolean("slots_v2", false)
     fun setSlotsMigrated(c: Context) = p(c).edit().putBoolean("slots_v2", true).apply()
 
+    /** Speed alert in km/h; 0 = off. */
+    fun speedLimit(c: Context) = p(c).getInt("speed_limit", 0)
+    fun setSpeedLimit(c: Context, v: Int) = p(c).edit().putInt("speed_limit", v).apply()
+
+    /** Block distracting apps (video, social) while moving. On by default. */
+    fun ridingLock(c: Context) = p(c).getBoolean("riding_lock", true)
+    fun setRidingLock(c: Context, v: Boolean) = p(c).edit().putBoolean("riding_lock", v).apply()
+
+    /** Auto-reply to WhatsApp while riding. Off by default: the user must turn it on. */
+    fun autoReply(c: Context) = p(c).getBoolean("auto_reply", false)
+    fun setAutoReply(c: Context, v: Boolean) = p(c).edit().putBoolean("auto_reply", v).apply()
+    fun autoReplyText(c: Context): String =
+        p(c).getString("auto_reply_text", null) ?: "Riding right now, will reply soon (sent by RideDash)"
+    fun setAutoReplyText(c: Context, v: String) = p(c).edit().putString("auto_reply_text", v.trim()).apply()
+
+    fun slotsV3(c: Context) = p(c).getBoolean("slots_v3", false)
+    fun setSlotsV3(c: Context) = p(c).edit().putBoolean("slots_v3", true).apply()
+
     fun clearSlots(c: Context) = p(c).edit().remove("slots").apply()
 
     fun slotsRaw(c: Context): String? = p(c).getString("slots", null)

@@ -28,7 +28,7 @@ object RideHub {
     )
 
     enum class Call { IDLE, RINGING, OFFHOOK }
-    enum class Change { MESSAGES, MEDIA, CALL, LINK, PAIRING }
+    enum class Change { MESSAGES, MEDIA, CALL, LINK, PAIRING, BADGES }
 
     private val main = Handler(Looper.getMainLooper())
     private val listeners = LinkedHashSet<(Change) -> Unit>()
@@ -87,6 +87,21 @@ object RideHub {
         callerName = name
         callRemote = remote
         fire(Change.CALL)
+    }
+
+    /** Current GPS speed in km/h, updated by the dashboard. */
+    @Volatile
+    var speedKmh = 0
+
+    /** Unread message count per app package, from notifications. */
+    var badges: Map<String, Int> = emptyMap()
+        private set
+
+    fun setBadges(m: Map<String, Int>) = onMain {
+        if (m != badges) {
+            badges = m
+            fire(Change.BADGES)
+        }
     }
 
     /** 6-digit code waiting for the user to confirm, or null. */

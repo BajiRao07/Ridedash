@@ -15,9 +15,19 @@ object Slots {
     const val CALL = "call"
     const val APPS = "apps"
     const val EMPTY = "empty"
+    const val CALENDAR = "calendar"
+    const val SETTINGS = "settings"
     const val COUNT = 8
 
-    val BUILTINS = listOf(NAV, MUSIC, CHATS, CALL, APPS)
+    val BUILTINS = listOf(NAV, MUSIC, CHATS, CALL, CALENDAR, SETTINGS, APPS)
+
+    /** Apps paused while riding (video and social feeds). */
+    val DISTRACTING = setOf(
+        "com.google.android.youtube", "com.instagram.android", "com.facebook.katana", "com.facebook.lite",
+        "com.snapchat.android", "com.zhiliaoapp.musically", "com.ss.android.ugc.trill", "in.mohalla.video",
+        "com.netflix.mediaclient", "in.startv.hotstar", "com.mxtech.videoplayer.ad", "com.amazon.avod.thirdpartyclient",
+        "com.twitter.android", "com.reddit.frontpage", "com.sharechat.app"
+    )
 
     /** Popular apps placed by default, if installed. Music and maps apps are left out:
      *  the Music and Map icons already cover them. */
@@ -43,7 +53,11 @@ object Slots {
             }.toMutableList()
         } else {
             val l = mutableListOf(Slot(NAV, null), Slot(MUSIC, null), Slot(CHATS, null), Slot(CALL, null))
-            DEFAULT_APPS.filter { isInstalled(c, it) }.take(4).forEach { l.add(Slot(null, it)) }
+            val apps = DEFAULT_APPS.filter { isInstalled(c, it) }
+            apps.take(1).forEach { l.add(Slot(null, it)) }
+            l.add(Slot(CALENDAR, null))
+            l.add(Slot(SETTINGS, null))
+            apps.drop(1).take(COUNT - l.size).forEach { l.add(Slot(null, it)) }
             l
         }
         while (list.size < COUNT) list.add(Slot(EMPTY, null))
@@ -54,6 +68,17 @@ object Slots {
                 if (s.builtin == APPS || s.pkg == "com.google.android.apps.youtube.music") list[i] = Slot(EMPTY, null)
             }
             Prefs.setSlotsMigrated(c)
+            save(c, list)
+        }
+        // New icons (Calendar, Settings) go into free spots for people upgrading.
+        if (raw != null && !Prefs.slotsV3(c)) {
+            for (b in listOf(CALENDAR, SETTINGS)) {
+                if (list.none { it.builtin == b }) {
+                    val i = list.indexOfFirst { it.builtin == EMPTY }
+                    if (i >= 0) list[i] = Slot(b, null)
+                }
+            }
+            Prefs.setSlotsV3(c)
             save(c, list)
         }
         return list.take(COUNT).map {

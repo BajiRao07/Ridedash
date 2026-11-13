@@ -203,6 +203,41 @@ class SettingsActivity : AppCompatActivity() {
                 Prefs.quickRepliesRaw(this), true) { Prefs.setQuickReplies(this, it) }
         }
 
+        // ---- Riding safety ----
+        val safe = section(getString(R.string.set_riding_safety))
+        val limit = Prefs.speedLimit(this)
+        row(safe, R.drawable.circle_sos, R.drawable.ic_bike, getString(R.string.set_speed),
+            if (limit == 0) getString(R.string.set_off) else getString(R.string.set_speed_sub, limit)) {
+            val values = listOf(0, 40, 60, 80, 100, 120)
+            val labels = values.map { if (it == 0) getString(R.string.set_off) else "$it km/h" }.toTypedArray()
+            AlertDialog.Builder(this)
+                .setTitle(R.string.set_speed)
+                .setSingleChoiceItems(labels, values.indexOf(limit).coerceAtLeast(0)) { d, i ->
+                    Prefs.setSpeedLimit(this, values[i])
+                    d.dismiss()
+                    build()
+                }
+                .show()
+        }
+        val lock = SwitchCompat(this).apply {
+            isChecked = Prefs.ridingLock(this@SettingsActivity)
+            setOnCheckedChangeListener { _, v -> Prefs.setRidingLock(this@SettingsActivity, v) }
+        }
+        row(safe, R.drawable.circle_call, R.drawable.ic_check, getString(R.string.set_lock),
+            getString(R.string.set_lock_sub), lock) { lock.toggle() }
+        val auto = SwitchCompat(this).apply {
+            isChecked = Prefs.autoReply(this@SettingsActivity)
+            setOnCheckedChangeListener { _, v -> Prefs.setAutoReply(this@SettingsActivity, v) }
+        }
+        row(safe, R.drawable.circle_chats, R.drawable.ic_tile_chats, getString(R.string.set_autoreply),
+            getString(R.string.set_autoreply_sub), auto) { auto.toggle() }
+        row(safe, R.drawable.circle_glass, R.drawable.ic_tile_chats, getString(R.string.set_autoreply_text),
+            "“" + Prefs.autoReplyText(this) + "”") {
+            editDialog(getString(R.string.set_autoreply_text), "", Prefs.autoReplyText(this)) {
+                if (it.isNotBlank()) Prefs.setAutoReplyText(this, it)
+            }
+        }
+
         // ---- Phone ----
         val phone = section(getString(R.string.set_phone))
         row(phone, R.drawable.circle_nav, R.drawable.ic_home_stroke, getString(R.string.wiz_home_title),
