@@ -129,8 +129,10 @@ class NotificationService : NotificationListenerService() {
 
     private fun pickController(list: List<MediaController>?) {
         try { current?.unregisterCallback(mediaCallback) } catch (e: Exception) { }
+        val chosen = Prefs.musicApp(this)
         val playing = list?.firstOrNull { it.playbackState?.state == PlaybackState.STATE_PLAYING }
-        current = playing ?: list?.firstOrNull()
+        val preferred = list?.firstOrNull { it.packageName == chosen }
+        current = playing ?: preferred ?: list?.firstOrNull()
         Local.controller = current
         current?.registerCallback(mediaCallback, handler)
         pushMedia()

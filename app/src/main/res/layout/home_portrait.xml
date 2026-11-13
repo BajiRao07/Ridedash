@@ -140,18 +140,6 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/btnAllApps"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_marginLeft="10dp"
-            android:background="@drawable/circle_glass"
-            android:clickable="true"
-            android:contentDescription="@string/all_apps"
-            android:focusable="true"
-            android:padding="15dp"
-            android:src="@drawable/ic_grid" />
-
-        <ImageView
             android:id="@+id/btnPhoneHome"
             android:layout_width="52dp"
             android:layout_height="52dp"

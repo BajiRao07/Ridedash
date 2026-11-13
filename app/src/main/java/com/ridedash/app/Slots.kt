@@ -19,11 +19,11 @@ object Slots {
 
     val BUILTINS = listOf(NAV, MUSIC, CHATS, CALL, APPS)
 
-    /** Popular apps placed by default, if installed. */
+    /** Popular apps placed by default, if installed. Music and maps apps are left out:
+     *  the Music and Map icons already cover them. */
     private val DEFAULT_APPS = listOf(
-        "com.whatsapp", "com.google.android.apps.youtube.music", "com.google.android.youtube",
-        "com.spotify.music", "com.instagram.android", "com.jio.media.jiobeats",
-        "com.google.android.apps.maps", "org.telegram.messenger", "com.whatsapp.w4b", "com.gaana"
+        "com.whatsapp", "com.instagram.android", "com.google.android.youtube",
+        "org.telegram.messenger", "com.whatsapp.w4b", "com.truecaller"
     )
 
     data class Slot(val builtin: String?, val pkg: String?)
@@ -43,11 +43,19 @@ object Slots {
             }.toMutableList()
         } else {
             val l = mutableListOf(Slot(NAV, null), Slot(MUSIC, null), Slot(CHATS, null), Slot(CALL, null))
-            DEFAULT_APPS.filter { isInstalled(c, it) }.take(3).forEach { l.add(Slot(null, it)) }
-            l.add(Slot(APPS, null))
+            DEFAULT_APPS.filter { isInstalled(c, it) }.take(4).forEach { l.add(Slot(null, it)) }
             l
         }
         while (list.size < COUNT) list.add(Slot(EMPTY, null))
+        // Older versions put YouTube Music and an "All apps" icon on the home screen: drop them.
+        if (raw != null && !Prefs.slotsMigrated(c)) {
+            for (i in list.indices) {
+                val s = list[i]
+                if (s.builtin == APPS || s.pkg == "com.google.android.apps.youtube.music") list[i] = Slot(EMPTY, null)
+            }
+            Prefs.setSlotsMigrated(c)
+            save(c, list)
+        }
         return list.take(COUNT).map {
             // An app that was uninstalled becomes an empty slot.
             if (it.pkg != null && !isInstalled(c, it.pkg)) Slot(EMPTY, null) else it
@@ -57,6 +65,15 @@ object Slots {
     fun save(c: Context, list: List<Slot>) {
         Prefs.setSlotsRaw(c, list.joinToString(",") { if (it.pkg != null) "p:${it.pkg}" else "b:${it.builtin}" })
     }
+
+    /** Music apps RideDash can control, in order of popularity in India. */
+    val MUSIC_APPS = listOf(
+        "com.google.android.apps.youtube.music", "com.spotify.music", "com.jio.media.jiobeats",
+        "com.gaana", "com.bsbportal.music", "com.amazon.mp3", "com.apple.android.music",
+        "com.sec.android.app.music", "com.google.android.youtube"
+    )
+
+    fun installedMusicApps(c: Context) = MUSIC_APPS.filter { isInstalled(c, it) }
 
     data class AppEntry(val pkg: String, val label: String)
 

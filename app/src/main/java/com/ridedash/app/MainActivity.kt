@@ -49,6 +49,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var screenMusic: View
     private lateinit var screenApps: View
     private lateinit var appsList: LinearLayout
+    private lateinit var musicApps: LinearLayout
+    private lateinit var btnOpenPlayer: Button
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private lateinit var callOverlay: View
     private var current: View? = null
 
@@ -159,7 +162,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        if (!Prefs.setupDone(this)) startActivity(Intent(this, SetupActivity::class.java))
+        if (!Prefs.setupDone(this)) startActivity(Intent(this, WizardActivity::class.java))
     }
 
     override fun onResume() {
@@ -175,6 +178,46 @@ class MainActivity : AppCompatActivity() {
             this, batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED), ContextCompat.RECEIVER_EXPORTED
         )
         if (Prefs.setupDone(this)) LinkService.start(this)
+    }
+
+    /** Helmet connects → bike layout; car stereo connects → car layout (only in Auto mode). */
+    private val btReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (Prefs.layoutMode(context) != Prefs.LAYOUT_AUTO) return
+            @Suppress("DEPRECATION")
+            val dev = intent.getParcelableExtra<android.bluetooth.BluetoothDevice>(android.bluetooth.BluetoothDevice.EXTRA_DEVICE)
+                ?: return
+            btOrientation = when (dev.address) {
+                Prefs.btBike(context) -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+                Prefs.btCar(context) -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                else -> return
+            }
+            applyOrientationSetting()
+        }
+    }
+    private var btReceiverOn = false
+    private var btOrientation: Int? = null
+
+    override fun onStart() {
+        super.onStart()
+        if (!btReceiverOn) {
+            try {
+                ContextCompat.registerReceiver(
+                    this, btReceiver,
+                    IntentFilter(android.bluetooth.BluetoothDevice.ACTION_ACL_CONNECTED),
+                    ContextCompat.RECEIVER_EXPORTED
+                )
+                btReceiverOn = true
+            } catch (e: Exception) { }
+        }
+    }
+
+    override fun onStop() {
+        if (btReceiverOn) {
+            try { unregisterReceiver(btReceiver) } catch (e: Exception) { }
+            btReceiverOn = false
+        }
+        super.onStop()
     }
 
     override fun onPause() {
@@ -202,6 +245,8 @@ class MainActivity : AppCompatActivity() {
         screenMusic = findViewById(R.id.screenMusic)
         screenApps = findViewById(R.id.screenApps)
         appsList = findViewById(R.id.appsList)
+        musicApps = findViewById(R.id.musicApps)
+        btnOpenPlayer = findViewById(R.id.btnOpenPlayer)
         callOverlay = findViewById(R.id.callOverlay)
         mapSpeed = findViewById(R.id.mapSpeed)
         mediaTitle = findViewById(R.id.mediaTitle)
@@ -226,7 +271,7 @@ class MainActivity : AppCompatActivity() {
         click(R.id.btnAppsBack) { show(screenDash) }
 
         click(R.id.btnPrev) { Actions.media(this, "prev") }
-        click(R.id.btnPlay) { Actions.media(this, "toggle") }
+        click(R.id.btnPlay) { playPause() }
         click(R.id.btnNext) { Actions.media(this, "next") }
 
         click(R.id.btnMapBack) { show(screenDash) }
@@ -261,6 +306,7 @@ class MainActivity : AppCompatActivity() {
             }
             screenCalls -> renderFavourites()
             screenApps -> renderAllApps()
+            screenMusic -> renderMusicApps()
         }
         if (v !== screenMap) map?.onPause()
     }
@@ -421,7 +467,91 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** Map icon: opens Google Maps with its search ready; falls back to the built-in map. */
+    private fun openMap() {
+        val gm = packageManager.getLaunchIntentForPackage("com.google.android.apps.maps")
+        if (gm != null) {
+            try {
+                startActivity(gm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                return
+            } catch (e: Exception) { }
+        }
+        show(screenMap)
+    }
+
+    // ---------------- Music ----------------
+
+    /** The chosen music app, or the first installed one. */
+    private fun musicPkg(): String? =
+        Prefs.musicApp(this)?.takeIf { Slots.isInstalled(this, it) } ?: Slots.installedMusicApps(this).firstOrNull()
+
+    /** Chips to choose which app RideDash plays from. */
+    private fun renderMusicApps() {
+        musicApps.removeAllViews()
+        val apps = Slots.installedMusicApps(this)
+        val chosen = musicPkg()
+        if (apps.isEmpty()) {
+            musicApps.addView(TextView(this).apply {
+                text = getString(R.string.music_none)
+                setTextColor(0xFFAEB4D0.toInt())
+                textSize = 14f
+            })
+        }
+        for (pkg in apps) {
+            val chip = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL
+                setBackgroundResource(if (pkg == chosen) R.drawable.bg_chip_sel else R.drawable.bg_chip)
+                setPadding(dp(8f), 0, dp(14f), 0)
+                isClickable = true
+                isFocusable = true
+                setOnClickListener {
+                    Prefs.setMusicApp(this@MainActivity, pkg)
+                    renderMusicApps()
+                }
+            }
+            chip.addView(android.widget.ImageView(this).apply {
+                Slots.icon(this@MainActivity, pkg)?.let { setImageDrawable(it) }
+            }, LinearLayout.LayoutParams(dp(30f), dp(30f)))
+            chip.addView(TextView(this).apply {
+                text = Slots.label(this@MainActivity, pkg)
+                setTextColor(0xFFFFFFFF.toInt())
+                textSize = 14f
+                setPadding(dp(8f), 0, 0, 0)
+            })
+            musicApps.addView(chip, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(44f)).apply {
+                rightMargin = dp(8f)
+            })
+        }
+        btnOpenPlayer.text = if (chosen != null) getString(R.string.music_open_x, Slots.label(this, chosen))
+        else getString(R.string.open_music_app)
+        updateMedia()
+    }
+
+    /**
+     * Play/pause. If a song is loaded, it is controlled directly. If nothing is playing,
+     * the chosen app is asked to resume in the background; only if that fails is the app opened.
+     */
+    private fun playPause() {
+        val m = RideHub.media
+        if (m != null && (m.remote || Local.controller != null)) {
+            Actions.media(this, "toggle")
+            return
+        }
+        val pkg = musicPkg()
+        if (pkg == null) {
+            toast(getString(R.string.music_none))
+            return
+        }
+        toast(getString(R.string.music_starting, Slots.label(this, pkg)))
+        Local.playInApp(this, pkg)
+        handler.postDelayed({
+            if (RideHub.media?.playing != true) launchApp(pkg)
+        }, 2500)
+    }
+
     private fun openMusicApp() {
+        musicPkg()?.let { launchApp(it); return }
         val pi = Local.controller?.sessionActivity
         try {
             if (pi != null) { pi.send(); return }
@@ -466,7 +596,7 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = when (Prefs.layoutMode(this)) {
             Prefs.LAYOUT_BIKE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
             Prefs.LAYOUT_CAR -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-            else -> ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+            else -> btOrientation ?: ActivityInfo.SCREEN_ORIENTATION_FULL_USER
         }
     }
 
@@ -499,7 +629,6 @@ class MainActivity : AppCompatActivity() {
             iconGrid = c.findViewById(R.id.iconGrid)
             c.findViewById<View>(R.id.btnSos)?.setOnClickListener { sos() }
             c.findViewById<View>(R.id.btnPhoneHome)?.setOnClickListener { openPhoneHome() }
-            c.findViewById<View>(R.id.btnAllApps)?.setOnClickListener { show(screenApps) }
             c.findViewById<View>(R.id.nowPlaying)?.setOnClickListener { show(screenMusic) }
             c.findViewById<View>(R.id.btnSetup)?.setOnClickListener {
                 startActivity(Intent(this, SetupActivity::class.java))
@@ -534,12 +663,14 @@ class MainActivity : AppCompatActivity() {
                     clipChildren = false
                 }
                 grid.addView(
-                    row, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f)
+                    row, LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply { if (i > 0) topMargin = dp(if (land) 14f else 26f) }
                 )
             }
             row!!.addView(
                 makeTile(i, slots[i], size),
-                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
+                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             )
         }
         updateBadge()
@@ -571,7 +702,7 @@ class MainActivity : AppCompatActivity() {
             circle.setPadding(pad, pad, pad, pad)
         } else {
             val (bg, icon, text) = when (b) {
-                Slots.NAV -> Triple(R.drawable.circle_nav, R.drawable.ic_tile_nav, getString(R.string.tile_navigate))
+                Slots.NAV -> Triple(R.drawable.circle_nav, R.drawable.ic_tile_map, getString(R.string.tile_navigate))
                 Slots.MUSIC -> Triple(R.drawable.circle_music, R.drawable.ic_tile_music, getString(R.string.tile_music))
                 Slots.CHATS -> Triple(R.drawable.circle_chats, R.drawable.ic_tile_chats, getString(R.string.tile_chats))
                 Slots.CALL -> Triple(R.drawable.circle_call, R.drawable.ic_tile_call, getString(R.string.tile_call))
@@ -625,7 +756,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
         when (slot.builtin) {
-            Slots.NAV -> askDestination()
+            Slots.NAV -> openMap()
             Slots.MUSIC -> show(screenMusic)
             Slots.CHATS -> show(screenMessages)
             Slots.CALL -> show(screenCalls)

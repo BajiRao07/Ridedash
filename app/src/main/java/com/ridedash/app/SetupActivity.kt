@@ -104,6 +104,16 @@ class SetupActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnPairNow).setOnClickListener { pairFromMain() }
         findViewById<Button>(R.id.btnForget).setOnClickListener { forget() }
         findViewById<Button>(R.id.btnSave).setOnClickListener { saveAndStart() }
+        findViewById<Button>(R.id.btnSetHome).setOnClickListener { UiHelpers.requestHomeRole(this) }
+        findViewById<Button>(R.id.btnWizard).setOnClickListener {
+            saveSettings()
+            startActivity(Intent(this, WizardActivity::class.java))
+            finish()
+        }
+        findViewById<Button>(R.id.btnMusicApp).setOnClickListener {
+            UiHelpers.chooseMusicApp(this) { updateMusicButton() }
+        }
+        updateMusicButton()
     }
 
     override fun onResume() {
@@ -119,6 +129,13 @@ class SetupActivity : AppCompatActivity() {
         RideHub.removeListener(hubListener)
         PairingDialog.detach()
         super.onPause()
+    }
+
+    private fun updateMusicButton() {
+        val pkg = Prefs.musicApp(this)
+        findViewById<Button>(R.id.btnMusicApp).text = getString(
+            R.string.music_app_x, if (pkg == null) "—" else Slots.label(this, pkg)
+        )
     }
 
     private fun updateStatus() {

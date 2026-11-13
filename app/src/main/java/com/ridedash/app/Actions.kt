@@ -60,6 +60,18 @@ object Local {
     var controller: MediaController? = null
     val replyActions = ConcurrentHashMap<String, Notification.Action>()
 
+    /**
+     * Start music in the chosen app without opening it: sends it a "play" media button.
+     * Most music apps (Spotify, YouTube Music, JioSaavn) resume the last song this way.
+     */
+    fun playInApp(c: Context, pkg: String) {
+        for (action in listOf(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.ACTION_UP)) {
+            val ev = android.view.KeyEvent(action, android.view.KeyEvent.KEYCODE_MEDIA_PLAY)
+            val i = Intent(Intent.ACTION_MEDIA_BUTTON).setPackage(pkg).putExtra(Intent.EXTRA_KEY_EVENT, ev)
+            try { c.sendBroadcast(i) } catch (e: Exception) { }
+        }
+    }
+
     fun media(cmd: String) {
         val c = controller ?: return
         val tc = c.transportControls

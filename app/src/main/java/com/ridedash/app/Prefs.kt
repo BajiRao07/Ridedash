@@ -59,6 +59,27 @@ object Prefs {
     fun quickReplies(c: Context): List<String> =
         quickRepliesRaw(c).lines().map { it.trim() }.filter { it.isNotEmpty() }
 
+    /** Music app chosen by the user (package name). */
+    fun musicApp(c: Context): String? = p(c).getString("music_app", null)
+    fun setMusicApp(c: Context, v: String) = p(c).edit().putString("music_app", v).apply()
+
+    /** Bluetooth devices that switch the layout: helmet = bike, car stereo = car. */
+    fun btBike(c: Context): String? = p(c).getString("bt_bike", null)
+    fun btCar(c: Context): String? = p(c).getString("bt_car", null)
+    fun setBtRole(c: Context, addr: String, role: String?) {
+        val e = p(c).edit()
+        if (btBike(c) == addr) e.remove("bt_bike")
+        if (btCar(c) == addr) e.remove("bt_car")
+        when (role) {
+            "bike" -> e.putString("bt_bike", addr)
+            "car" -> e.putString("bt_car", addr)
+        }
+        e.apply()
+    }
+
+    fun slotsMigrated(c: Context) = p(c).getBoolean("slots_v2", false)
+    fun setSlotsMigrated(c: Context) = p(c).edit().putBoolean("slots_v2", true).apply()
+
     fun slotsRaw(c: Context): String? = p(c).getString("slots", null)
     fun setSlotsRaw(c: Context, v: String) = p(c).edit().putString("slots", v).apply()
 

@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg">
+    android:background="@drawable/bg_glow">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,10 +13,28 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/setup"
+            android:text="@string/settings"
             android:textColor="@color/text"
-            android:textSize="28sp"
+            android:textSize="30sp"
             android:textStyle="bold" />
+
+        <TextView
+            style="@style/Heading"
+            android:text="@string/h_quick" />
+
+        <Button
+            android:id="@+id/btnMusicApp"
+            style="@style/SetupBtn" />
+
+        <Button
+            android:id="@+id/btnSetHome"
+            style="@style/SetupBtn"
+            android:text="@string/wiz_home_title" />
+
+        <Button
+            android:id="@+id/btnWizard"
+            style="@style/SetupBtn"
+            android:text="@string/run_wizard" />
 
         <TextView
             style="@style/Body"

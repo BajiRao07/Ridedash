@@ -25,6 +25,11 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <queries>
+        <package android:name="com.bsbportal.music" />
+        <package android:name="com.amazon.mp3" />
+        <package android:name="com.apple.android.music" />
+        <package android:name="com.sec.android.app.music" />
+        <package android:name="com.truecaller" />
         <package android:name="com.whatsapp" />
         <package android:name="com.whatsapp.w4b" />
         <package android:name="com.instagram.android" />
@@ -73,6 +78,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".WizardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".SetupActivity"

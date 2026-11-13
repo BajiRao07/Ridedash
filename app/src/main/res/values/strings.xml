@@ -16,7 +16,7 @@
     <string name="navigate">NAVIGATE</string>
     <string name="go">Go</string>
     <string name="go_tile">GO</string>
-    <string name="tile_navigate">Navigate</string>
+    <string name="tile_navigate">Map</string>
     <string name="tile_music">Music</string>
     <string name="tile_chats">Chats</string>
     <string name="tile_call">Call</string>
@@ -132,4 +132,63 @@
     <string name="choose_peer_first">Choose the bike phone first</string>
     <string name="notif_reminder">Remember to allow notification access</string>
     <string name="open_settings_manually">Please open this in phone Settings</string>
+
+    <!-- Setup wizard -->
+    <string name="wiz_welcome_title">Your old phone is now a smart dashboard</string>
+    <string name="wiz_welcome_sub">Maps, music, chats and calls for your bike and car. Setup takes about 2 minutes.</string>
+    <string name="wiz_get_started">Get started</string>
+    <string name="wiz_continue">Continue</string>
+    <string name="wiz_skip">Skip for now</string>
+    <string name="wiz_save">Save</string>
+    <string name="wiz_next">Next</string>
+    <string name="wiz_allow">Allow</string>
+    <string name="wiz_allow_x">Allow %1$s</string>
+    <string name="wiz_open">Open</string>
+    <string name="wiz_set">Set</string>
+    <string name="wiz_ride_title">Where will you ride?</string>
+    <string name="wiz_ride_sub">RideDash changes its layout by itself: portrait on the bike, landscape in the car.</string>
+    <string name="wiz_bike">Bike</string>
+    <string name="wiz_bike_sub">Big speed and big icons, portrait</string>
+    <string name="wiz_car">Car</string>
+    <string name="wiz_car_sub">Wide layout with a side bar, landscape</string>
+    <string name="wiz_both">Both · Recommended</string>
+    <string name="wiz_both_sub">Switches when your helmet or car stereo connects, or when you turn the phone</string>
+    <string name="wiz_perm_title">Allow a few things</string>
+    <string name="wiz_perm_sub">One at a time. Everything stays on this phone.</string>
+    <string name="wiz_p_location">Location</string>
+    <string name="wiz_p_location_sub">Your speed, the map and SOS location</string>
+    <string name="wiz_p_notif">Notifications</string>
+    <string name="wiz_p_notif_sub">Show and read out messages and songs</string>
+    <string name="wiz_p_phone">Phone</string>
+    <string name="wiz_p_phone_sub">Answer and make calls with one tap</string>
+    <string name="wiz_p_bt">Bluetooth</string>
+    <string name="wiz_p_bt_sub">Switch bike or car mode by itself</string>
+    <string name="wiz_notif_hint">Turn on RideDash. If it is greyed out: App info → ⋮ → Allow restricted settings.</string>
+    <string name="wiz_privacy">No ads, no account, no data sent anywhere.</string>
+    <string name="wiz_connect_title">Connect</string>
+    <string name="wiz_connect_sub">Turn on your main phone\'s hotspot and connect this phone to it once. It reconnects by itself.</string>
+    <string name="wiz_net_ok">Internet connected</string>
+    <string name="wiz_net_ok_sub">Wi-Fi or hotspot ready</string>
+    <string name="wiz_net_no">No Wi-Fi yet</string>
+    <string name="wiz_net_no_sub">Connect to your main phone\'s hotspot</string>
+    <string name="wiz_bt_title">Your Bluetooth devices</string>
+    <string name="wiz_bt_sub">Tag your helmet as Bike and your car stereo as Car. RideDash switches layout when they connect.</string>
+    <string name="wiz_bt_none">No paired devices yet. Pair your helmet or car stereo in Bluetooth settings, then come back. You can also do this later in Settings.</string>
+    <string name="wiz_safety_title">Stay safe</string>
+    <string name="wiz_safety_sub">Your SOS contact gets your live location in one tap. Favourites become big call buttons.</string>
+    <string name="wiz_ready_title">You\'re ready to ride</string>
+    <string name="wiz_ready_sub">Make RideDash your home screen so it is always one tap away.</string>
+    <string name="wiz_home_title">Set as home screen</string>
+    <string name="wiz_home_sub">Press Home and you land on RideDash</string>
+    <string name="wiz_home_already">RideDash is already your home screen</string>
+    <string name="wiz_start">Start riding</string>
+
+    <!-- Music -->
+    <string name="music_choose">Your music app</string>
+    <string name="music_none">Install Spotify, YouTube Music or JioSaavn to play music</string>
+    <string name="music_open_x">Open %1$s</string>
+    <string name="music_starting">Starting %1$s…</string>
+    <string name="music_app_x">Music app: %1$s</string>
+    <string name="run_wizard">Run setup wizard again</string>
+    <string name="h_quick">Quick settings</string>
 </resources>
