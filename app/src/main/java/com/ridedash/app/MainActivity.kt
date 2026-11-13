@@ -619,32 +619,60 @@ class MainActivity : AppCompatActivity() {
         for ((pkg, b) in appBadges) set(b, RideHub.badges[pkg] ?: 0)
     }
 
-    /** White round calendar face: weekday in red, date in big dark digits. */
-    private fun calendarFace(size: Int): View {
+    /**
+     * Any app's icon as a full round icon, like a Samsung or Pixel home screen.
+     * Adaptive icons fill the whole circle; older icons sit on a white circle.
+     */
+    private fun roundIcon(d: android.graphics.drawable.Drawable, size: Int): android.graphics.Bitmap {
+        val bmp = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+        val c = android.graphics.Canvas(bmp)
+        val clip = android.graphics.Path().apply {
+            addCircle(size / 2f, size / 2f, size / 2f, android.graphics.Path.Direction.CW)
+        }
+        c.clipPath(clip)
+        if (android.os.Build.VERSION.SDK_INT >= 26 && d is android.graphics.drawable.AdaptiveIconDrawable) {
+            // Adaptive layers are 108 units with the visible part in the middle 72: scale by 1.5.
+            val ext = (size * 0.25f).toInt()
+            d.background?.let { it.setBounds(-ext, -ext, size + ext, size + ext); it.draw(c) }
+            d.foreground?.let { it.setBounds(-ext, -ext, size + ext, size + ext); it.draw(c) }
+        } else {
+            c.drawColor(0xFFFFFFFF.toInt())
+            val inset = (size * 0.16f).toInt()
+            d.setBounds(inset, inset, size - inset, size - inset)
+            d.draw(c)
+        }
+        // soft shine on top, same as the RideDash icons
+        val shine = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            shader = android.graphics.LinearGradient(0f, 0f, 0f, size / 2f, 0x30FFFFFF, 0x00FFFFFF,
+                android.graphics.Shader.TileMode.CLAMP)
+        }
+        c.drawRect(0f, 0f, size.toFloat(), size / 2f, shine)
+        return bmp
+    }
+
+    /** Round calendar icon: weekday in red, today's date in big dark digits, both centred. */
+    private fun calendarIcon(size: Int): android.graphics.Bitmap {
+        val bmp = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+        val c = android.graphics.Canvas(bmp)
+        val r = size / 2f
+        val bg = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            shader = android.graphics.LinearGradient(0f, 0f, 0f, size.toFloat(), 0xFFFFFFFF.toInt(), 0xFFE6E9F1.toInt(),
+                android.graphics.Shader.TileMode.CLAMP)
+        }
+        c.drawCircle(r, r, r, bg)
         val now = java.util.Calendar.getInstance()
         val day = java.text.SimpleDateFormat("EEE", Locale.getDefault()).format(now.time).uppercase(Locale.getDefault())
-        val col = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = android.view.Gravity.CENTER
-            isDuplicateParentStateEnabled = true
-            elevation = dp(9f).toFloat()
-            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        val p = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            textAlign = android.graphics.Paint.Align.CENTER
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
         }
-        col.addView(TextView(this).apply {
-            text = day
-            setTextColor(0xFFE5383B.toInt())
-            setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, size * 0.15f)
-            setTypeface(typeface, android.graphics.Typeface.BOLD)
-            includeFontPadding = false
-        })
-        col.addView(TextView(this).apply {
-            text = now.get(java.util.Calendar.DAY_OF_MONTH).toString()
-            setTextColor(0xFF15192B.toInt())
-            setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, size * 0.40f)
-            setTypeface(typeface, android.graphics.Typeface.BOLD)
-            includeFontPadding = false
-        })
-        return col
+        p.color = 0xFFE5383B.toInt()
+        p.textSize = size * 0.16f
+        c.drawText(day, r, size * 0.37f, p)
+        p.color = 0xFF15192B.toInt()
+        p.textSize = size * 0.42f
+        c.drawText(now.get(java.util.Calendar.DAY_OF_MONTH).toString(), r, size * 0.77f, p)
+        return bmp
     }
 
     private fun openCalendar() {
@@ -768,10 +796,7 @@ class MainActivity : AppCompatActivity() {
         val b = slot.builtin
         if (slot.pkg != null) {
             label = Slots.label(this, slot.pkg)
-            circle.setBackgroundResource(R.drawable.circle_glass)
-            Slots.icon(this, slot.pkg)?.let { circle.setImageDrawable(it) }
-            val pad = (size * 0.13f).toInt()
-            circle.setPadding(pad, pad, pad, pad)
+            Slots.icon(this, slot.pkg)?.let { circle.setImageBitmap(roundIcon(it, size)) }
         } else {
             val (bg, icon, text) = when (b) {
                 Slots.NAV -> Triple(R.drawable.circle_nav, R.drawable.ic_tile_map, getString(R.string.tile_navigate))
@@ -785,8 +810,13 @@ class MainActivity : AppCompatActivity() {
             }
             label = text
             circle.setBackgroundResource(bg)
-            if (icon != 0) circle.setImageResource(icon)
-            val pad = (size * (if (b == Slots.APPS || b == Slots.EMPTY) 0.32f else 0.22f)).toInt()
+            if (b == Slots.CALENDAR) circle.setImageBitmap(calendarIcon(size))
+            else if (icon != 0) circle.setImageResource(icon)
+            val pad = when (b) {
+                Slots.CALENDAR -> 0
+                Slots.APPS, Slots.EMPTY -> (size * 0.32f).toInt()
+                else -> (size * 0.22f).toInt()
+            }
             circle.setPadding(pad, pad, pad, pad)
         }
         circle.outlineProvider = object : android.view.ViewOutlineProvider() {
@@ -794,9 +824,8 @@ class MainActivity : AppCompatActivity() {
                 outline.setOval(0, 0, view.width, view.height)
             }
         }
-        circle.elevation = dp(if (slot.pkg == null && b != Slots.EMPTY && b != Slots.APPS) 8f else 3f).toFloat()
+        circle.elevation = dp(if (b != Slots.EMPTY && b != Slots.APPS) 8f else 3f).toFloat()
         frame.addView(circle, FrameLayout.LayoutParams(size, size))
-        if (b == Slots.CALENDAR) frame.addView(calendarFace(size), FrameLayout.LayoutParams(size, size))
         if (b == Slots.CHATS || slot.pkg != null) {
             val badge = TextView(this).apply {
                 setBackgroundResource(R.drawable.bg_badge)
@@ -909,10 +938,7 @@ class MainActivity : AppCompatActivity() {
                 setOnClickListener { launchApp(app.pkg) }
             }
             cell.addView(android.widget.ImageView(this).apply {
-                setBackgroundResource(R.drawable.circle_glass)
-                Slots.icon(this@MainActivity, app.pkg)?.let { setImageDrawable(it) }
-                val pad = dp(8f)
-                setPadding(pad, pad, pad, pad)
+                Slots.icon(this@MainActivity, app.pkg)?.let { setImageBitmap(roundIcon(it, size)) }
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
             }, LinearLayout.LayoutParams(size, size))
             cell.addView(TextView(this).apply {
