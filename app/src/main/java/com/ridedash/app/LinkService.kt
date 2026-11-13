@@ -172,7 +172,8 @@ class LinkService : Service() {
             }
         }
         val piFlags = if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0
-        val pi = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), piFlags)
+        val open = packageManager.getLaunchIntentForPackage(packageName) ?: Intent()
+        val pi = PendingIntent.getActivity(this, 0, open, piFlags)
         return NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat)
             .setContentTitle("RideDash")
@@ -470,8 +471,8 @@ class LinkService : Service() {
     /** Main phone sends its current state as soon as the bike phone connects. */
     private fun onConnected() {
         if (!Prefs.isCompanion(this)) return
-        RideHub.media?.let { if (!it.remote) write(Proto.media(it)) }
-        if (!RideHub.callRemote && RideHub.call != RideHub.Call.IDLE) {
+        if (Prefs.shareMusic(this)) RideHub.media?.let { if (!it.remote) write(Proto.media(it)) }
+        if (Prefs.shareCalls(this) && !RideHub.callRemote && RideHub.call != RideHub.Call.IDLE) {
             write(Proto.call(RideHub.call, RideHub.callerName))
         }
     }
@@ -515,17 +516,17 @@ class LinkService : Service() {
             when (t) {
                 "media_cmd" -> {
                     val cmd = o.optString("cmd")
-                    if (cmd in setOf("toggle", "play", "pause", "next", "prev")) Local.media(cmd)
+                    if (Prefs.shareMusic(this) && cmd in setOf("toggle", "play", "pause", "next", "prev")) Local.media(cmd)
                 }
-                "call_cmd" -> when (o.optString("cmd")) {
+                "call_cmd" -> if (Prefs.shareCalls(this)) when (o.optString("cmd")) {
                     "answer" -> Local.answer(this)
                     "reject" -> Local.reject(this)
                 }
-                "reply" -> {
+                "reply" -> if (Prefs.shareMessages(this)) {
                     val text = txt(o, "text").take(500)
                     if (text.isNotBlank()) Local.reply(this, o.optString("key"), text)
                 }
-                "dial" -> {
+                "dial" -> if (Prefs.shareCalls(this)) {
                     // Only phone-number characters are accepted.
                     val number = o.optString("number").trim()
                     if (number.length in 3..20 && number.all { it.isDigit() || it in "+*# " }) {

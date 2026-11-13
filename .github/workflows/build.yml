@@ -16,13 +16,17 @@ jobs:
           java-version: "17"
 
       # The runner image already ships the Android SDK (ANDROID_HOME is set).
-      - name: Build debug APK
+      - name: Build both APKs
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace --no-daemon
+          ./gradlew assembleBikeDebug assembleLinkDebug --stacktrace --no-daemon
 
       - uses: actions/upload-artifact@v4
         with:
-          name: RideDash-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: RideDash-old-phone-apk
+          path: app/build/outputs/apk/bike/debug/*.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RideDash-Link-main-phone-apk
+          path: app/build/outputs/apk/link/debug/*.apk

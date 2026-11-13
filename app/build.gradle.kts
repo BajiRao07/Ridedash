@@ -15,6 +15,21 @@ android {
         versionName = "1.0"
     }
 
+    // Two apps from one project:
+    //  bike = RideDash, the dashboard for the old phone
+    //  link = RideDash Link, a small locked-down sync app for the main phone
+    flavorDimensions += "role"
+    productFlavors {
+        create("bike") {
+            dimension = "role"
+            applicationId = "com.ridedash.app"
+        }
+        create("link") {
+            dimension = "role"
+            applicationId = "com.ridedash.link"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false

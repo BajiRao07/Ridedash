@@ -87,6 +87,8 @@ class NotificationService : NotificationListenerService() {
         } catch (e: Exception) { /* access not granted yet */ }
 
         updateBadges()
+        // Main phone: bring the sync link back up after a restart.
+        if (Prefs.isCompanion(this) && Prefs.isPaired(this)) LinkService.start(this)
         if (!receiverOn) {
             try {
                 ContextCompat.registerReceiver(
@@ -153,7 +155,7 @@ class NotificationService : NotificationListenerService() {
             remote = false
         )
         RideHub.setMedia(media)
-        if (Prefs.isCompanion(this)) LinkService.send(Proto.media(media))
+        if (Prefs.isCompanion(this) && Prefs.shareMusic(this)) LinkService.send(Proto.media(media))
     }
 
     // ---------- calls ----------
@@ -162,7 +164,7 @@ class NotificationService : NotificationListenerService() {
         lastCallState = state
         val name = lastCallerName.ifBlank { if (state == RideHub.Call.RINGING) "Incoming call" else "Call" }
         RideHub.setCall(state, name, false)
-        if (Prefs.isCompanion(this)) LinkService.send(Proto.call(state, name))
+        if (Prefs.isCompanion(this) && Prefs.shareCalls(this)) LinkService.send(Proto.call(state, name))
     }
 
     // ---------- messages ----------
@@ -201,7 +203,7 @@ class NotificationService : NotificationListenerService() {
             remote = false
         )
         RideHub.addMessage(msg)
-        if (Prefs.isCompanion(this)) LinkService.send(Proto.msg(msg))
+        if (Prefs.isCompanion(this) && Prefs.shareMessages(this)) LinkService.send(Proto.msg(msg))
         updateBadges()
         maybeAutoReply(msg)
     }

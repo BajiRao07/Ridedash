@@ -80,6 +80,12 @@ object Prefs {
     fun slotsMigrated(c: Context) = p(c).getBoolean("slots_v2", false)
     fun setSlotsMigrated(c: Context) = p(c).edit().putBoolean("slots_v2", true).apply()
 
+    /** Main phone (RideDash Link): what it is allowed to share with the bike screen. */
+    fun shareMessages(c: Context) = p(c).getBoolean("share_msgs", true)
+    fun shareCalls(c: Context) = p(c).getBoolean("share_calls", true)
+    fun shareMusic(c: Context) = p(c).getBoolean("share_music", true)
+    fun setShare(c: Context, key: String, v: Boolean) = p(c).edit().putBoolean(key, v).apply()
+
     /** Speed alert in km/h; 0 = off. */
     fun speedLimit(c: Context) = p(c).getInt("speed_limit", 0)
     fun setSpeedLimit(c: Context, v: Int) = p(c).edit().putInt("speed_limit", v).apply()

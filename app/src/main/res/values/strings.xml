@@ -239,4 +239,39 @@
     <string name="set_autoreply">Auto-reply while riding</string>
     <string name="set_autoreply_sub">Tells WhatsApp senders you are riding. Once every 30 min per chat</string>
     <string name="set_autoreply_text">Auto-reply message</string>
+
+    <!-- Sync with main phone -->
+    <string name="sync_title">Sync with main phone</string>
+    <string name="sync_start">Start pairing (3 minutes)</string>
+    <string name="sync_stop">Stop sync and forget main phone</string>
+    <string name="sync_advanced">Advanced pairing screen</string>
+    <string name="sync_connected">On · main phone connected</string>
+    <string name="sync_waiting">On · waiting for main phone</string>
+    <string name="sync_pairing">Pairing… open RideDash Link on the main phone</string>
+    <string name="sync_not_paired">On · not paired yet</string>
+    <string name="sync_steps">1. Pair both phones in Bluetooth settings (once).\n2. On your main phone open RideDash Link → Choose bike phone → Pair now.\n3. Both phones show a 6-digit code. Tap MATCH on both if it is the same.</string>
+
+    <!-- RideDash Link (main phone) -->
+    <string name="link_tagline">Keeps your bike screen in sync</string>
+    <string name="link_s_allow">1 · Allow</string>
+    <string name="link_s_bike">2 · Bike screen</string>
+    <string name="link_s_share">3 · What to share</string>
+    <string name="link_s_run">4 · Keep running</string>
+    <string name="link_notif_sub">Read new messages, songs and caller names</string>
+    <string name="link_phone_sub">Answer, reject and make calls from the bike screen</string>
+    <string name="link_bt_sub">Talk to the bike screen</string>
+    <string name="link_choose">Bike phone</string>
+    <string name="link_paired">Paired securely</string>
+    <string name="link_paired_sub">Encrypted link with your bike screen</string>
+    <string name="link_forget_sub">Unpair and stop syncing</string>
+    <string name="link_pair_sub">On the bike phone first tap Settings → Sync with main phone → Start pairing</string>
+    <string name="link_share_msgs">Messages</string>
+    <string name="link_share_msgs_sub">WhatsApp and SMS shown and read aloud; quick replies allowed</string>
+    <string name="link_share_calls">Calls</string>
+    <string name="link_share_calls_sub">Caller name, answer, reject and favourite calls</string>
+    <string name="link_share_music">Music</string>
+    <string name="link_share_music_sub">Song name and play, pause, next from the bike screen</string>
+    <string name="link_battery_sub">Set to Unrestricted so the link stays on during rides</string>
+    <string name="link_pairing_toast">Pairing… keep both phones open. A 6-digit code will appear.</string>
+    <string name="link_privacy">RideDash Link has no internet access. Data only goes to your paired bike screen, encrypted.</string>
 </resources>

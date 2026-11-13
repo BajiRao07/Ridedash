@@ -25,6 +25,18 @@ import androidx.appcompat.widget.SwitchCompat
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var list: LinearLayout
+    private var syncSummary: TextView? = null
+
+    private val hubListener: (RideHub.Change) -> Unit = { change ->
+        when (change) {
+            RideHub.Change.LINK -> { syncSummary?.text = syncLabel() }
+            RideHub.Change.PAIRING -> {
+                PairingDialog.update(this)
+                if (RideHub.pairingCode == null) build()
+            }
+            else -> {}
+        }
+    }
     private val white = 0xFFFFFFFF.toInt()
     private val soft = 0xFFAEB4D0.toInt()
 
@@ -43,7 +55,63 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        RideHub.addListener(hubListener)
         build()
+        PairingDialog.update(this)
+    }
+
+    override fun onPause() {
+        RideHub.removeListener(hubListener)
+        PairingDialog.detach()
+        super.onPause()
+    }
+
+    private fun syncLabel(): String = when {
+        Prefs.mode(this) != Prefs.MODE_DASHBOARD -> getString(R.string.set_off)
+        LinkService.isConnected -> getString(R.string.sync_connected)
+        Prefs.isPaired(this) -> getString(R.string.sync_waiting)
+        Prefs.pairingOpen(this) -> getString(R.string.sync_pairing)
+        else -> getString(R.string.sync_not_paired)
+    }
+
+    /** Old phone: pair with RideDash Link on the main phone, or stop syncing. */
+    private fun syncMenu() {
+        val paired = Prefs.mode(this) == Prefs.MODE_DASHBOARD && Prefs.isPaired(this)
+        val items = if (paired) arrayOf(getString(R.string.sync_stop), getString(R.string.sync_advanced))
+        else arrayOf(getString(R.string.sync_start), getString(R.string.sync_advanced))
+        AlertDialog.Builder(this)
+            .setTitle(R.string.sync_title)
+            .setItems(items) { _, i ->
+                when {
+                    i == 1 -> startActivity(Intent(this, SetupActivity::class.java))
+                    paired -> {
+                        SecureStore.clear(this)
+                        Prefs.clearPeer(this)
+                        Prefs.closePairing(this)
+                        Prefs.setMode(this, Prefs.MODE_STANDALONE)
+                        LinkService.stop(this)
+                        build()
+                    }
+                    else -> {
+                        if (!Perms.bluetooth(this)) {
+                            toast(getString(R.string.allow_bt_first))
+                            startActivity(Intent(this, WizardActivity::class.java))
+                            return@setItems
+                        }
+                        Prefs.setMode(this, Prefs.MODE_DASHBOARD)
+                        Prefs.openPairing(this)
+                        LinkService.restart(this)
+                        AlertDialog.Builder(this)
+                            .setTitle(R.string.sync_title)
+                            .setMessage(R.string.sync_steps)
+                            .setPositiveButton(android.R.string.ok, null)
+                            .show()
+                        build()
+                    }
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     // ---------------- building blocks ----------------
@@ -67,7 +135,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun row(card: LinearLayout, bg: Int, icon: Int, title: String, summary: String,
-                    trailing: View? = null, onClick: (() -> Unit)?) {
+                    trailing: View? = null, onClick: (() -> Unit)?): TextView? {
         if (card.childCount > 0) {
             card.addView(View(this).apply { setBackgroundColor(0x14FFFFFF) },
                 LinearLayout.LayoutParams(-1, 1).apply { leftMargin = dp(68f) })
@@ -94,10 +162,12 @@ class SettingsActivity : AppCompatActivity() {
         }, LinearLayout.LayoutParams(dp(40f), dp(40f)))
         val col = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         col.addView(text(title, 16.5f, white, true))
-        if (summary.isNotEmpty()) col.addView(text(summary, 13.5f, soft).apply { maxLines = 2 })
+        val sum = if (summary.isNotEmpty()) text(summary, 13.5f, soft).apply { maxLines = 2 } else null
+        sum?.let { col.addView(it) }
         r.addView(col, LinearLayout.LayoutParams(0, -2, 1f).apply { leftMargin = dp(14f); rightMargin = dp(8f) })
         r.addView(trailing ?: text("›", 26f, 0xFF6F7695.toInt()))
         card.addView(r, LinearLayout.LayoutParams(-1, -2))
+        return sum
     }
 
     private fun toast(s: String) = Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
@@ -256,13 +326,8 @@ class SettingsActivity : AppCompatActivity() {
 
         // ---- Advanced ----
         val adv = section(getString(R.string.set_advanced))
-        val modeLabel = when (Prefs.mode(this)) {
-            Prefs.MODE_DASHBOARD -> getString(R.string.set_mode_bike)
-            Prefs.MODE_COMPANION -> getString(R.string.set_mode_main)
-            else -> getString(R.string.set_mode_off)
-        }
-        row(adv, R.drawable.circle_call, R.drawable.ic_wifi, getString(R.string.set_two_phone), modeLabel) {
-            startActivity(Intent(this, SetupActivity::class.java))
+        syncSummary = row(adv, R.drawable.circle_call, R.drawable.ic_bt, getString(R.string.sync_title), syncLabel()) {
+            syncMenu()
         }
         row(adv, R.drawable.circle_glass, R.drawable.ic_star, getString(R.string.run_wizard), "") {
             startActivity(Intent(this, WizardActivity::class.java))
