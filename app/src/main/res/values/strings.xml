@@ -191,4 +191,34 @@
     <string name="music_app_x">Music app: %1$s</string>
     <string name="run_wizard">Run setup wizard again</string>
     <string name="h_quick">Quick settings</string>
+
+    <!-- Settings -->
+    <string name="set_ride">Ride</string>
+    <string name="set_safety">Safety and contacts</string>
+    <string name="set_phone">Phone</string>
+    <string name="set_advanced">Advanced</string>
+    <string name="set_about">About</string>
+    <string name="set_not_chosen">Not chosen</string>
+    <string name="set_not_set">Not set</string>
+    <string name="set_saved_n">%1$d saved</string>
+    <string name="set_read_aloud">Read messages aloud</string>
+    <string name="set_read_aloud_sub">Speaks new messages and caller names</string>
+    <string name="set_icons">Home screen icons</string>
+    <string name="set_icons_sub">Long-press an icon on the home screen to change it</string>
+    <string name="set_icons_reset">Reset home icons?</string>
+    <string name="set_icons_reset_msg">Puts Map, Music, Chats and Call back with your popular apps.</string>
+    <string name="set_reset">Reset</string>
+    <string name="set_done">Done</string>
+    <string name="set_replies">Quick replies</string>
+    <string name="set_replies_hint">One reply per line</string>
+    <string name="set_perms">Permissions and devices</string>
+    <string name="set_perms_sub">%1$d of 4 allowed · helmet and car stereo</string>
+    <string name="set_battery">Battery optimisation</string>
+    <string name="set_battery_sub">Keep RideDash running during long rides</string>
+    <string name="set_two_phone">Two-phone mode</string>
+    <string name="set_mode_off">Off · this phone works on its own</string>
+    <string name="set_mode_bike">On · this is the bike screen</string>
+    <string name="set_mode_main">On · this is the main phone</string>
+    <string name="set_version">Version %1$s</string>
+    <string name="set_privacy">Privacy</string>
 </resources>

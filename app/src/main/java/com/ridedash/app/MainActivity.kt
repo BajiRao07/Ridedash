@@ -429,7 +429,7 @@ class MainActivity : AppCompatActivity() {
         val contact = Prefs.sosContact(this)
         if (contact == null) {
             toast(getString(R.string.sos_missing))
-            startActivity(Intent(this, SetupActivity::class.java))
+            startActivity(Intent(this, SettingsActivity::class.java))
             return
         }
         val (name, number) = contact
@@ -631,7 +631,7 @@ class MainActivity : AppCompatActivity() {
             c.findViewById<View>(R.id.btnPhoneHome)?.setOnClickListener { openPhoneHome() }
             c.findViewById<View>(R.id.nowPlaying)?.setOnClickListener { show(screenMusic) }
             c.findViewById<View>(R.id.btnSetup)?.setOnClickListener {
-                startActivity(Intent(this, SetupActivity::class.java))
+                startActivity(Intent(this, SettingsActivity::class.java))
             }
             speedText?.text = lastSpeed
             speedSmall?.text = lastSpeed
@@ -712,9 +712,15 @@ class MainActivity : AppCompatActivity() {
             label = text
             circle.setBackgroundResource(bg)
             circle.setImageResource(icon)
-            val pad = (size * (if (b == Slots.APPS || b == Slots.EMPTY) 0.32f else 0.25f)).toInt()
+            val pad = (size * (if (b == Slots.APPS || b == Slots.EMPTY) 0.32f else 0.22f)).toInt()
             circle.setPadding(pad, pad, pad, pad)
         }
+        circle.outlineProvider = object : android.view.ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: android.graphics.Outline) {
+                outline.setOval(0, 0, view.width, view.height)
+            }
+        }
+        circle.elevation = dp(if (slot.pkg == null && b != Slots.EMPTY && b != Slots.APPS) 8f else 3f).toFloat()
         frame.addView(circle, FrameLayout.LayoutParams(size, size))
         if (b == Slots.CHATS) {
             val badge = TextView(this).apply {

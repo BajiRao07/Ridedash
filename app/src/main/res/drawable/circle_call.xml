@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
-        <shape android:shape="oval"><gradient android:angle="315" android:startColor="#4F46E5" android:endColor="#4F46E5" /></shape>
+        <layer-list>
+            <item><shape android:shape="oval"><gradient android:angle="315" android:startColor="#5B3FF0" android:endColor="#5B3FF0" /></shape></item>
+            <item><shape android:shape="oval"><gradient android:angle="270" android:startColor="#22FFFFFF" android:centerColor="#00FFFFFF" android:endColor="#00FFFFFF" /></shape></item>
+        </layer-list>
     </item>
     <item>
-        <shape android:shape="oval"><gradient android:angle="315" android:startColor="#B07CFF" android:endColor="#4F46E5" /></shape>
+        <layer-list>
+            <item><shape android:shape="oval"><gradient android:angle="315" android:startColor="#B884FF" android:endColor="#5B3FF0" /></shape></item>
+            <item><shape android:shape="oval"><gradient android:angle="270" android:startColor="#40FFFFFF" android:centerColor="#00FFFFFF" android:endColor="#00FFFFFF" /></shape></item>
+        </layer-list>
     </item>
 </selector>

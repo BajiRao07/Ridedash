@@ -80,6 +80,8 @@ object Prefs {
     fun slotsMigrated(c: Context) = p(c).getBoolean("slots_v2", false)
     fun setSlotsMigrated(c: Context) = p(c).edit().putBoolean("slots_v2", true).apply()
 
+    fun clearSlots(c: Context) = p(c).edit().remove("slots").apply()
+
     fun slotsRaw(c: Context): String? = p(c).getString("slots", null)
     fun setSlotsRaw(c: Context, v: String) = p(c).edit().putString("slots", v).apply()
 
